@@ -1,7 +1,6 @@
 package com.fongmi.android.tv.api;
 
 import android.app.Activity;
-import android.os.Handler;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -77,21 +76,6 @@ public class Updater implements Download.Callback {
         App.execute(()->postUpdateUrl(urlKey, callback));
     }
 
-    public void exitAppCheck() {
-        App.execute(this::isExit);
-    }
-
-    private void isExit() {
-        try {
-            JSONObject object = new JSONObject(OkHttp.newCall(getJson()).execute().body().string());
-            int code = object.optInt("code");
-            if (code == -1) {
-                System.exit(0);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     public void start() {
         App.execute(this::doInBackground);
@@ -107,6 +91,9 @@ public class Updater implements Download.Callback {
             String name = object.optString("name");
             String desc = object.optString("desc");
             int code = object.optInt("code");
+            if (code == -1) {
+                System.exit(0);
+            }
             if (need(code, name)) App.post(() -> show(App.activity(), name, desc));
         } catch (Exception e) {
             e.printStackTrace();
@@ -135,12 +122,15 @@ public class Updater implements Download.Callback {
     }
 
     private AlertDialog create(Activity activity) {
-        return dialog = new MaterialAlertDialogBuilder(activity).setView(binding.getRoot()).setCancelable(false).create();
+        dialog = new MaterialAlertDialogBuilder(activity).setView(binding.getRoot()).setCancelable(false).create();
+        dialog.setCancelable(false);
+        return dialog;
     }
 
     private void cancel(View view) {
-        Prefers.putUpdate(false);
-        dismiss();
+        Notify.show("请按确认更新到最新版本");
+//        Prefers.putUpdate(false);
+//        dismiss();
     }
 
     private void confirm(View view) {

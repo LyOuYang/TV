@@ -79,8 +79,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     @Override
     protected void initView() {
         mBinding.progressLayout.showProgress();
-//        Updater.get().start();
-        Updater.get().exitAppCheck();
+        Updater.get().start();
         showInputDialog();
         Server.get().start();
         setRecyclerView();
@@ -122,6 +121,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         final EditText editText = new EditText(HomeActivity.this);
         AlertDialog.Builder inputDialog =
                 new AlertDialog.Builder(HomeActivity.this);
+        inputDialog.setCancelable(false);
         inputDialog.setTitle("请输入接入码").setView(editText);
         inputDialog.setPositiveButton("确定",
                 (dialog, which) -> entryCodeCheck(editText.getText().toString())).show();
@@ -376,6 +376,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
 
     @Override
     public void onBackPressed() {
+
         if (mHistoryPresenter.isDelete()) {
             setHistoryDelete(false);
         } else if (mBinding.recycler.getSelectedPosition() != 0) {
