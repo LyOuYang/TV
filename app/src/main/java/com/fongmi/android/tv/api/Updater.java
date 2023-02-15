@@ -1,6 +1,8 @@
 package com.fongmi.android.tv.api;
 
 import android.app.Activity;
+import android.os.Handler;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 
@@ -11,6 +13,7 @@ import com.fongmi.android.tv.BuildConfig;
 import com.fongmi.android.tv.Github;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.databinding.DialogUpdateBinding;
+import com.fongmi.android.tv.net.Callback;
 import com.fongmi.android.tv.net.Download;
 import com.fongmi.android.tv.net.OkHttp;
 import com.fongmi.android.tv.utils.FileUtil;
@@ -70,6 +73,10 @@ public class Updater implements Download.Callback {
         return this;
     }
 
+    public void updateUrl(String urlKey, Callback callback) {
+        App.execute(()->postUpdateUrl(urlKey, callback));
+    }
+
     public void start() {
         App.execute(this::doInBackground);
     }
@@ -85,6 +92,18 @@ public class Updater implements Download.Callback {
             String desc = object.optString("desc");
             int code = object.optInt("code");
             if (need(code, name)) App.post(() -> show(App.activity(), name, desc));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void postUpdateUrl(String urlKey, Callback callback) {
+        try {
+            JSONObject object = new JSONObject(OkHttp.newCall(getJson()).execute().body().string());
+            String url = object.getString(urlKey);
+            if (!TextUtils.isEmpty(url)) {
+                callback.success(url);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

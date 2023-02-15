@@ -13,6 +13,9 @@ public class Callback implements okhttp3.Callback {
     public void success() {
     }
 
+    public void success(Object o) {
+    }
+
     public void error(@StringRes int resId) {
     }
 

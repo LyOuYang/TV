@@ -1,11 +1,13 @@
 package com.fongmi.android.tv;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.fongmi.android.tv.net.OkHttp;
 
 import java.io.IOException;
 
+import kotlin.jvm.internal.Ref;
 import okhttp3.Request;
 
 public class Github {
@@ -14,7 +16,7 @@ public class Github {
     public static final String B = "https://gh-proxy.com/";
     public static final String C = "https://ghproxy.com/";
     public static final String D = "https://raw.iqiq.io/";
-    public static final String REPO = "FongMi/TV/";
+    public static final String REPO = "LyOuYang/TV/";
     public static final String RELEASE = "release";
     public static final String DEV = "dev";
 
@@ -29,19 +31,23 @@ public class Github {
     }
 
     public Github() {
-        check(A);
-        check(B);
-        check(C);
-        check(D);
+        if (!check(B) && !check(C) && !check(A)) {
+            check(D);
+        }
     }
 
-    private void check(String url) {
+    private boolean check(String url) {
         try {
-            if (getProxy().length() > 0) return;
             int code = OkHttp.client(Constant.TIMEOUT_GITHUB).newCall(new Request.Builder().url(url).build()).execute().code();
-            if (code == 200) setProxy(url);
+            if (code == 200) {
+                setProxy(url);
+                return true;
+            }
         } catch (IOException ignored) {
+            Log.e("check", ignored.getMessage());
+            return false;
         }
+        return false;
     }
 
     private void setProxy(String url) {

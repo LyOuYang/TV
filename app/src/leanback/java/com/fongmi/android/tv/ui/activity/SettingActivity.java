@@ -3,7 +3,15 @@ package com.fongmi.android.tv.ui.activity;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+import android.text.TextUtils;
+import android.util.Log;
+import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.tv.BuildConfig;
@@ -15,6 +23,7 @@ import com.fongmi.android.tv.api.WallConfig;
 import com.fongmi.android.tv.bean.Config;
 import com.fongmi.android.tv.bean.Live;
 import com.fongmi.android.tv.bean.Site;
+import com.fongmi.android.tv.bean.UrlRsp;
 import com.fongmi.android.tv.databinding.ActivitySettingBinding;
 import com.fongmi.android.tv.event.RefreshEvent;
 import com.fongmi.android.tv.impl.ConfigCallback;
@@ -29,7 +38,16 @@ import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.Prefers;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.fongmi.android.tv.utils.Utils;
+import com.google.gson.Gson;
 import com.permissionx.guolindev.PermissionX;
+
+import java.io.IOException;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class SettingActivity extends BaseActivity implements ConfigCallback, SiteCallback, LiveCallback {
 
@@ -61,6 +79,13 @@ public class SettingActivity extends BaseActivity implements ConfigCallback, Sit
 
     @Override
     protected void initEvent() {
+        mBinding.url.setOnClickListener(view -> {
+            delayClick(mBinding.url); Updater.get().force().updateUrl("url", getUrlCallback());
+        });
+        mBinding.urlBack.setOnClickListener(view -> {
+            delayClick(mBinding.urlBack);
+            Updater.get().force().updateUrl("url_back", getUrlCallback());
+        });
         mBinding.vodHome.setOnClickListener(view -> SiteDialog.create(this).all().show());
         mBinding.liveHome.setOnClickListener(view -> LiveDialog.create(this).show());
         mBinding.vod.setOnClickListener(view -> ConfigDialog.create(this).type(0).show());
@@ -77,6 +102,11 @@ public class SettingActivity extends BaseActivity implements ConfigCallback, Sit
         mBinding.render.setOnClickListener(view -> setRender());
         mBinding.scale.setOnClickListener(view -> setScale());
         mBinding.size.setOnClickListener(view -> setSize());
+    }
+
+    private void delayClick(View view) {
+        view.setEnabled(false);
+        handler.postDelayed(() -> view.setEnabled(true),3000);
     }
 
     @Override
@@ -208,4 +238,71 @@ public class SettingActivity extends BaseActivity implements ConfigCallback, Sit
     private void setWallRefresh() {
         WallConfig.get().load();
     }
+
+    Handler handler = new Handler(Looper.myLooper()) {
+        @Override
+        public void dispatchMessage(@NonNull Message msg) {
+            super.dispatchMessage(msg);
+            if (msg.what == 1) {
+                String url = (String) msg.getData().get("url");
+                Notify.show("获取成功：url=" + url);
+                setConfig(Config.find(url, 0));
+            }
+        }
+    };
+
+    private void downloadUrl() {
+        new Thread(() -> {
+            postUrl(getUrlCallback());
+        }).start();
+    }
+
+    private void postUrl(Callback callback) {
+        Request request = getUrlRequest();
+        try {
+            OkHttpClient client = new OkHttpClient().newBuilder()
+                    .build();
+            Response response = client.newCall(request).execute();
+            callback.success(new Gson().fromJson(response.body().string(), UrlRsp.class));
+        } catch (IOException e) {
+            Log.e(e.getMessage(),e.getMessage());
+            callback.error(R.string.error_play_url);
+        }
+    }
+
+    @NonNull
+    private Request getUrlRequest() {
+        MediaType mediaType = MediaType.parse("text/plain");
+        RequestBody body = RequestBody.create(mediaType, "123");
+        Request request = new Request.Builder()
+                .url("https://mock.apifox.cn/m2/2300854-0-default/62329969?apifoxToken=6LSWYhIOtEvEPmZ1ybiOsH7BZtEUb1oo")
+                .method("POST", body)
+                .addHeader("User-Agent", "Apifox/1.0.0 (https://www.apifox.cn)")
+                .build();
+        return request;
+    }
+
+    private Callback getUrlCallback() {
+        return new Callback() {
+            @Override
+            public void success(Object url) {
+                if (url instanceof String && !TextUtils.isEmpty(((String) url))){
+                    Message message = new Message();
+                    message.what = 1;
+                    Bundle bundle = new Bundle();
+                    bundle.putString("url", (String) url);
+                    message.setData(bundle);
+                    handler.sendMessage(message);
+                } else {
+                    Notify.show(R.string.error_empty);
+                }
+            }
+
+            @Override
+            public void error(int resId) {
+                Notify.show(resId);
+            }
+        };
+    }
+
 }

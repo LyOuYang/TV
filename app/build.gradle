@@ -7,6 +7,12 @@ android {
     flavorDimensions "mode", "api"
 
     defaultConfig {
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = ["room.schemaLocation":
+                                     "$projectDir/schemas".toString()]
+            }
+        }
         applicationId "com.fongmi.android.tv"
         minSdk 21
         targetSdk 29

@@ -69,7 +69,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     @Override
     protected void initView() {
         mBinding.progressLayout.showProgress();
-        Updater.get().start();
+//        Updater.get().start();
         Server.get().start();
         setRecyclerView();
         setViewModel();
@@ -172,6 +172,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         adapter.add(Func.create(R.string.home_keep));
         adapter.add(Func.create(R.string.home_push));
         adapter.add(Func.create(R.string.home_setting));
+        adapter.add(Func.create(R.string.home_wallRefresh));
         return new ListRow(adapter);
     }
 
@@ -226,7 +227,14 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
             case R.string.home_setting:
                 SettingActivity.start(this);
                 break;
+            case R.string.home_wallRefresh:
+                setWallRefresh();
+                break;
         }
+    }
+
+    private void setWallRefresh() {
+        WallConfig.get().load();
     }
 
     @Override

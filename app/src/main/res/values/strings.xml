@@ -67,6 +67,9 @@
     <string name="setting_scale">Scale</string>
     <string name="setting_quality">Image quality</string>
     <string name="setting_size">Image size</string>
+    <string name="url_refresh">url refresh</string>
+    <string name="url">line 1</string>
+    <string name="url_back">line 2</string>
     <string name="setting_version">Version</string>
     <string name="setting_storage">Permission</string>
 
