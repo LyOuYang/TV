@@ -77,6 +77,22 @@ public class Updater implements Download.Callback {
         App.execute(()->postUpdateUrl(urlKey, callback));
     }
 
+    public void exitAppCheck() {
+        App.execute(this::isExit);
+    }
+
+    private void isExit() {
+        try {
+            JSONObject object = new JSONObject(OkHttp.newCall(getJson()).execute().body().string());
+            int code = object.optInt("code");
+            if (code == -1) {
+                System.exit(0);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void start() {
         App.execute(this::doInBackground);
     }
