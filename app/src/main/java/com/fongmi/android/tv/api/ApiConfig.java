@@ -102,10 +102,10 @@ public class ApiConfig {
     }
 
     public void load(boolean cache, Callback callback) {
-        new Thread(() -> {
+        App.execute(()->{
             if (cache) loadCache(callback);
             else loadConfig(callback);
-        }).start();
+        });
     }
 
     private void loadConfig(Callback callback) {
@@ -130,8 +130,8 @@ public class ApiConfig {
             initLive(object);
             initParse(object);
             initOther(object);
-            jarLoader.parseJar("", Json.safeString(object, "spider"));
-            config.json(object.toString()).update();
+//            jarLoader.parseJar("", Json.safeString(object, "spider"));
+//            config.json(object.toString()).update();
             App.post(callback::success);
         } catch (Exception e) {
             e.printStackTrace();

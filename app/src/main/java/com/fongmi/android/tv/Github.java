@@ -55,7 +55,7 @@ public class Github {
     }
 
     private String getProxy() {
-        return TextUtils.isEmpty(proxy) ? "" : proxy;
+        return TextUtils.isEmpty(proxy) ? B + A + REPO : proxy;
     }
 
     public String getReleasePath(String path) {
