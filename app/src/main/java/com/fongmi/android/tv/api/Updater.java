@@ -128,9 +128,8 @@ public class Updater implements Download.Callback {
     }
 
     private void cancel(View view) {
-        Notify.show("请按确认更新到最新版本");
-//        Prefers.putUpdate(false);
-//        dismiss();
+        Prefers.putUpdate(false);
+        dismiss();
     }
 
     private void confirm(View view) {
