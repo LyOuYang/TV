@@ -13,6 +13,7 @@ import com.fongmi.android.tv.bean.Result;
 import com.fongmi.android.tv.bean.Site;
 import com.fongmi.android.tv.bean.Vod;
 import com.fongmi.android.tv.net.OkHttp;
+import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.Utils;
 import com.github.catvod.crawler.Spider;
 import com.github.catvod.crawler.SpiderDebug;
@@ -33,6 +34,8 @@ public class SiteViewModel extends ViewModel {
     public MutableLiveData<Result> player;
     public MutableLiveData<Result> search;
     public ExecutorService executor;
+
+    public int effectiveCount = 0;
 
     public SiteViewModel() {
         this.result = new MutableLiveData<>();
@@ -180,6 +183,8 @@ public class SiteViewModel extends ViewModel {
 
     private void post(Site site, Result result) {
         if (result.getList().isEmpty()) return;
+        Notify.dismiss();
+        effectiveCount++;
         for (Vod vod : result.getList()) vod.setSite(site);
         this.search.postValue(result);
     }

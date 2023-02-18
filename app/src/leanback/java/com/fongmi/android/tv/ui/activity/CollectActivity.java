@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewbinding.ViewBinding;
 import androidx.viewpager.widget.ViewPager;
 
+import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.Constant;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.api.ApiConfig;
@@ -27,6 +28,7 @@ import com.fongmi.android.tv.databinding.ActivityCollectBinding;
 import com.fongmi.android.tv.model.SiteViewModel;
 import com.fongmi.android.tv.ui.fragment.CollectFragment;
 import com.fongmi.android.tv.ui.presenter.CollectPresenter;
+import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.PausableThreadPoolExecutor;
 import com.fongmi.android.tv.utils.ResUtil;
 
@@ -128,10 +130,18 @@ public class CollectActivity extends BaseActivity {
     private void search() {
         mAdapter.add(Collect.all());
         mPageAdapter.notifyDataSetChanged();
-//        mExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         int core = Runtime.getRuntime().availableProcessors();
-        mExecutor = new PausableThreadPoolExecutor(core, core * 2, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(100));
+        int corePoolSize = Math.max(Constant.THREAD_POOL, core);
+        mExecutor = new PausableThreadPoolExecutor(corePoolSize, corePoolSize, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(100));
         mBinding.result.setText(getString(R.string.collect_result, getKeyword()));
+        if (mViewModel.effectiveCount == 0) Notify.progress(this);
+        App.post(() -> {
+            if (mViewModel.effectiveCount == 0) {
+                Notify.dismiss();
+                Notify.show("未搜索到资源");
+            }
+        }, 40000L);
+
         for (Site site : mSites) mExecutor.execute(() -> search(site));
     }
 
