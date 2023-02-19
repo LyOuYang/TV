@@ -59,7 +59,7 @@ public class CollectFragment extends BaseFragment implements VodPresenter.OnClic
         CustomSelector selector = new CustomSelector();
         selector.addPresenter(ListRow.class, new CustomRowPresenter(16), VodPresenter.class);
         mBinding.recycler.setAdapter(new ItemBridgeAdapter(mAdapter = new ArrayObjectAdapter(selector)));
-        mBinding.recycler.setHeader(getActivity().findViewById(R.id.result), getActivity().findViewById(R.id.recycler));
+        mBinding.recycler.setHeader(getActivity().findViewById(R.id.result_layout), getActivity().findViewById(R.id.recycler));
         mBinding.recycler.setVerticalSpacing(ResUtil.dp2px(16));
         addVideo(Vod.arrayFrom(json));
     }
