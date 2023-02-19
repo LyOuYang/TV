@@ -1,5 +1,6 @@
 package com.fongmi.android.tv.ui.activity;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.view.View;
@@ -32,16 +33,11 @@ import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.PausableThreadPoolExecutor;
 import com.fongmi.android.tv.utils.ResUtil;
 
-import org.chromium.base.CollectionUtil;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class CollectActivity extends BaseActivity {
 
@@ -127,6 +123,7 @@ public class CollectActivity extends BaseActivity {
         mSites.add(0, home);
     }
 
+    @SuppressLint("SetTextI18n")
     private void search() {
         mAdapter.add(Collect.all());
         mPageAdapter.notifyDataSetChanged();
@@ -134,15 +131,19 @@ public class CollectActivity extends BaseActivity {
         int corePoolSize = Math.max(Constant.THREAD_POOL, core);
         mExecutor = new PausableThreadPoolExecutor(corePoolSize, corePoolSize, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(100));
         mBinding.result.setText(getString(R.string.collect_result, getKeyword()));
-        if (mViewModel.effectiveCount == 0) Notify.progress(this);
-        App.post(() -> {
-            if (mViewModel.effectiveCount == 0) {
-                Notify.dismiss();
-                Notify.show("未搜索到资源");
-            }
-        }, 40000L);
+        mBinding.searchCount.setMax(mSites.size());
+        mBinding.searchCount.setProgress(0);
 
-        for (Site site : mSites) mExecutor.execute(() -> search(site));
+        AtomicInteger count = new AtomicInteger();
+        for (Site site : mSites)
+            mExecutor.execute(() -> {
+                search(site);
+                int c = count.incrementAndGet();
+                App.post(() -> {
+                    mBinding.searchCount.setProgress(c);
+                    mBinding.totalCountTextview.setText(c +"/"+ mSites.size());
+                });
+            });
     }
 
     private void search(Site site) {

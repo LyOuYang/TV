@@ -35,8 +35,6 @@ public class SiteViewModel extends ViewModel {
     public MutableLiveData<Result> search;
     public ExecutorService executor;
 
-    public int effectiveCount = 0;
-
     public SiteViewModel() {
         this.result = new MutableLiveData<>();
         this.player = new MutableLiveData<>();
@@ -157,7 +155,6 @@ public class SiteViewModel extends ViewModel {
                 result.setUrl(url);
                 result.setFlag(flag);
                 result.setPlayUrl(site.getPlayUrl());
-                result.setJx(Utils.isVip(url) ? 1 : 0);
                 result.setParse(Utils.isVideoFormat(url) ? 0 : 1);
                 return result;
             }
@@ -183,8 +180,6 @@ public class SiteViewModel extends ViewModel {
 
     private void post(Site site, Result result) {
         if (result.getList().isEmpty()) return;
-        Notify.dismiss();
-        effectiveCount++;
         for (Vod vod : result.getList()) vod.setSite(site);
         this.search.postValue(result);
     }

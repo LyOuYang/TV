@@ -7,17 +7,45 @@
     android:keepScreenOn="true"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/result"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:layout_marginStart="24dp"
         android:layout_marginTop="24dp"
-        android:layout_marginBottom="16dp"
-        android:singleLine="true"
-        android:textColor="@color/white"
-        android:textSize="24sp"
-        tools:text="@string/collect_result" />
+        android:gravity="top"
+        android:layout_marginEnd="24dp">
+        <TextView
+            android:id="@+id/result"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:singleLine="true"
+            android:textColor="@color/white"
+            android:textSize="24sp"
+            android:layout_marginEnd="24dp"
+            tools:text="@string/collect_result" />
+        <ProgressBar
+            android:id="@+id/search_count"
+            android:layout_width="0dp"
+            android:layout_height="24sp"
+            android:layout_marginTop="2dp"
+            style="@android:style/Widget.ProgressBar.Horizontal"
+            android:layout_marginEnd="24dp"
+            android:layout_weight="1">
+        </ProgressBar>
+        <TextView
+            android:id="@+id/total_count_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:textSize="24sp"
+            android:gravity="center_vertical|end"
+            android:layout_marginEnd="16dp"
+            />
+
+    </LinearLayout>
+
 
     <com.fongmi.android.tv.ui.custom.CustomHorizontalGridView
         android:id="@+id/recycler"
