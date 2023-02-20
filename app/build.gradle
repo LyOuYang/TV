@@ -7,6 +7,7 @@ android {
     flavorDimensions "mode", "api"
 
     defaultConfig {
+        multiDexEnabled true
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments = ["room.schemaLocation":
@@ -14,7 +15,7 @@ android {
             }
         }
         applicationId "com.fongmi.android.tv"
-        minSdk 21
+        minSdk 19
         targetSdk 29
         versionCode 68
         versionName "1.6.8"
