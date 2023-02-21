@@ -7,7 +7,7 @@ android {
     compileSdk 33
 
     defaultConfig {
-        minSdk 19
+        minSdk 21
         targetSdk 29
         ndk { abiFilters "armeabi-v7a" }
         python {
