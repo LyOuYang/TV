@@ -1,6 +1,5 @@
 package com.fongmi.android.tv.ui.fragment.child;
 
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
@@ -9,20 +8,20 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewbinding.ViewBinding;
 
+import com.fongmi.android.tv.Product;
 import com.fongmi.android.tv.api.ApiConfig;
 import com.fongmi.android.tv.bean.Vod;
 import com.fongmi.android.tv.databinding.FragmentTypeBinding;
-import com.fongmi.android.tv.event.RefreshEvent;
 import com.fongmi.android.tv.model.SiteViewModel;
 import com.fongmi.android.tv.ui.activity.BaseFragment;
+import com.fongmi.android.tv.ui.activity.CollectActivity;
 import com.fongmi.android.tv.ui.activity.DetailActivity;
 import com.fongmi.android.tv.ui.adapter.VodAdapter;
 import com.fongmi.android.tv.ui.custom.CustomScroller;
-
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
+import com.fongmi.android.tv.ui.fragment.VodFragment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,7 +29,6 @@ import java.util.List;
 
 public class TypeFragment extends BaseFragment implements CustomScroller.Callback, VodAdapter.OnClickListener {
 
-    private GridLayoutManager mGridLayoutManager;
     private HashMap<String, String> mExtends;
     private FragmentTypeBinding mBinding;
     private CustomScroller mScroller;
@@ -45,6 +43,10 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
         TypeFragment fragment = new TypeFragment();
         fragment.setArguments(args);
         return fragment;
+    }
+
+    private VodFragment getParent() {
+        return (VodFragment) getParentFragment();
     }
 
     private String getTypeId() {
@@ -74,12 +76,18 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
     @Override
     protected void initEvent() {
         mBinding.recycler.addOnScrollListener(mScroller = new CustomScroller(this));
+        mBinding.recycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                getParent().toggleFilter(dy);
+            }
+        });
     }
 
     private void setRecyclerView() {
         mBinding.recycler.setHasFixedSize(true);
         mBinding.recycler.setAdapter(mVodAdapter = new VodAdapter(this));
-        mBinding.recycler.setLayoutManager(mGridLayoutManager = new GridLayoutManager(getContext(), getSpanCount()));
+        mBinding.recycler.setLayoutManager(new GridLayoutManager(getContext(), Product.getColumn()));
     }
 
     private void setViewModel() {
@@ -138,18 +146,14 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
 
     @Override
     public boolean onLongClick(Vod item) {
-        //CollectActivity.start(getActivity(), item.getVodName());
+        CollectActivity.start(getActivity(), item.getVodName());
         return true;
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onRefreshEvent(RefreshEvent event) {
-        if (event.getType() == RefreshEvent.Type.IMAGE) mVodAdapter.notifyDataSetChanged();
-    }
-
     @Override
-    public void onConfigurationChanged(@NonNull Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        mGridLayoutManager.setSpanCount(getSpanCount());
+    public boolean canBack() {
+        if (mTypeIds.size() == 0) return true;
+        refresh(2);
+        return false;
     }
 }

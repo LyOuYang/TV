@@ -1,12 +1,10 @@
 package com.fongmi.android.tv.ui.activity;
 
 import android.app.Activity;
-import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewbinding.ViewBinding;
 
@@ -17,7 +15,6 @@ import com.fongmi.android.tv.event.RefreshEvent;
 import com.fongmi.android.tv.utils.FileUtil;
 import com.fongmi.android.tv.utils.Prefers;
 import com.fongmi.android.tv.utils.ResUtil;
-import com.fongmi.android.tv.utils.Utils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -34,9 +31,9 @@ public abstract class BaseActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(getBinding().getRoot());
         EventBus.getDefault().register(this);
-        Utils.hideSystemUI(this);
         setWall();
         initView();
+        initView(savedInstanceState);
         initEvent();
     }
 
@@ -45,6 +42,9 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     protected void initView() {
+    }
+
+    protected void initView(Bundle savedInstanceState) {
     }
 
     protected void initEvent() {
@@ -60,28 +60,16 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onRefreshEvent(RefreshEvent event) {
-        if (event.getType() != RefreshEvent.Type.WALL) return;
-        WallConfig.get().setDrawable(null);
-        setWall();
-    }
-
     @Override
     public Resources getResources() {
         return Product.hackResources(super.getResources());
     }
 
-    @Override
-    public void onConfigurationChanged(@NonNull Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        Utils.hideSystemUI(this);
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        if (hasFocus) Utils.hideSystemUI(this);
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onRefreshEvent(RefreshEvent event) {
+        if (event.getType() != RefreshEvent.Type.WALL) return;
+        WallConfig.get().setDrawable(null);
+        setWall();
     }
 
     @Override

@@ -2,12 +2,18 @@ package com.fongmi.android.tv.utils;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.PictureInPictureParams;
+import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.graphics.Rect;
 import android.net.Uri;
+import android.os.Build;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Base64;
+import android.util.Rational;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
@@ -17,6 +23,7 @@ import androidx.fragment.app.FragmentActivity;
 
 import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.server.Server;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.permissionx.guolindev.PermissionX;
 
 import java.math.BigInteger;
@@ -60,6 +67,15 @@ public class Utils {
         return event.getAction() == KeyEvent.ACTION_UP && event.getKeyCode() == KeyEvent.KEYCODE_MENU;
     }
 
+    public static void toggleFullscreen(Activity activity, boolean fullscreen) {
+        if (fullscreen) Utils.hideSystemUI(activity);
+        else Utils.showSystemUI(activity);
+    }
+
+    public static void showSystemUI(Activity activity) {
+        activity.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+    }
+
     public static void hideSystemUI(Activity activity) {
         hideSystemUI(activity.getWindow());
     }
@@ -67,6 +83,44 @@ public class Utils {
     public static void hideSystemUI(Window window) {
         int flags = View.SYSTEM_UI_FLAG_LOW_PROFILE | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
         window.getDecorView().setSystemUiVisibility(flags);
+    }
+
+    public static void toggleFab(int dy, FloatingActionButton fab) {
+        if (Math.abs(dy) < 50) return;
+        if (dy > 0) Utils.hideFab(fab);
+        else Utils.showFab(fab);
+    }
+
+    public static void showFab(FloatingActionButton fab) {
+        if (fab.getVisibility() == View.INVISIBLE) fab.show();
+    }
+
+    public static void hideFab(FloatingActionButton fab) {
+        if (fab.getVisibility() != View.VISIBLE) return;
+        fab.hide(new FloatingActionButton.OnVisibilityChangedListener() {
+            @Override
+            public void onHidden(FloatingActionButton fab) {
+                fab.setVisibility(View.INVISIBLE);
+            }
+        });
+    }
+
+    public static boolean hasPIP() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && App.get().getPackageManager().hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE);
+    }
+
+    public static void enterPIP(Activity activity, Rect sourceRectHint, Rational rational) {
+        try {
+            if (!hasPIP() || activity.isInPictureInPictureMode()) return;
+            PictureInPictureParams.Builder builder = new PictureInPictureParams.Builder();
+            builder.setAspectRatio(rational).build();
+            builder.setSourceRectHint(sourceRectHint);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) builder.setAutoEnterEnabled(true);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) builder.setSeamlessResizeEnabled(true);
+            activity.enterPictureInPictureMode(builder.build());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static boolean isVideoFormat(String url) {
@@ -78,6 +132,14 @@ public class Utils {
         if (headers.containsKey("Accept") && headers.get("Accept").startsWith("image")) return false;
         if (url.contains("url=http") || url.contains(".js") || url.contains(".css") || url.contains(".html")) return false;
         return Sniffer.RULE.matcher(url).find();
+    }
+
+    public static boolean isAutoRotate() {
+        return Settings.System.getInt(App.get().getContentResolver(), Settings.System.ACCELEROMETER_ROTATION, 0) == 1;
+    }
+
+    public static boolean hasPermission(FragmentActivity activity) {
+        return PermissionX.isGranted(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
     }
 
     public static String checkProxy(String url) {
@@ -137,6 +199,10 @@ public class Utils {
         return text;
     }
 
+    public static CharSequence getClipText() {
+        return ((ClipboardManager) App.get().getSystemService(Context.CLIPBOARD_SERVICE)).getText();
+    }
+
     public static long format(SimpleDateFormat format, String src) {
         try {
             return format.parse(src).getTime();
@@ -161,9 +227,5 @@ public class Utils {
         if (imm != null && windowToken != null) {
             imm.hideSoftInputFromWindow(windowToken, 0);
         }
-    }
-
-    public static boolean hasPermission(FragmentActivity activity) {
-        return PermissionX.isGranted(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
     }
 }
