@@ -38,6 +38,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class VodFragment extends BaseFragment implements SiteCallback, FilterCallback, TypeAdapter.OnClickListener {
 
@@ -49,7 +50,8 @@ public class VodFragment extends BaseFragment implements SiteCallback, FilterCal
     }
 
     private BaseFragment getFragment() {
-        return (BaseFragment) mBinding.pager.getAdapter().instantiateItem(mBinding.pager, mBinding.pager.getCurrentItem());
+        if (mBinding.pager.getAdapter() == null) return null;
+        return (BaseFragment) Objects.requireNonNull(mBinding.pager.getAdapter()).instantiateItem(mBinding.pager, mBinding.pager.getCurrentItem());
     }
 
     private Site getSite() {
@@ -178,6 +180,7 @@ public class VodFragment extends BaseFragment implements SiteCallback, FilterCal
 
     @Override
     public boolean canBack() {
+        if (getFragment() == null) return true;
         return getFragment().canBack();
     }
 
