@@ -1,8 +1,11 @@
 package com.fongmi.android.tv.ui.activity;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.MenuItem;
+import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -22,13 +25,23 @@ import com.fongmi.android.tv.ui.custom.FragmentStateManager;
 import com.fongmi.android.tv.ui.fragment.SettingFragment;
 import com.fongmi.android.tv.ui.fragment.VodFragment;
 import com.fongmi.android.tv.utils.Notify;
+import com.fongmi.android.tv.utils.Prefers;
 import com.google.android.material.navigation.NavigationBarView;
+
+import java.util.Locale;
+import java.util.Random;
+import java.util.regex.Pattern;
 
 public class MainActivity extends BaseActivity implements NavigationBarView.OnItemSelectedListener {
 
     private FragmentStateManager mManager;
     private ActivityMainBinding mBinding;
     private boolean confirm;
+
+    private final static int ENCRYPTION_KEY = 1996;
+
+    private final static String DEVICE_CODE_KEY = "deviceCode";
+    private final static String ENTRY_CODE_KEY = "entryCode";
 
     @Override
     protected ViewBinding getBinding() {
@@ -43,11 +56,57 @@ public class MainActivity extends BaseActivity implements NavigationBarView.OnIt
 
     @Override
     protected void initView(Bundle savedInstanceState) {
+        showInputDialog();
         initFragment(savedInstanceState);
         Notify.progress(this);
         Updater.get().start();
         Server.get().start();
         initConfig();
+    }
+
+    private void showInputDialog() {
+        /*@setView 装入一个EditView
+         */
+        if (!TextUtils.isEmpty(Prefers.getString(ENTRY_CODE_KEY))) {
+            return;
+        }
+
+        final String deviceCode;
+        if (TextUtils.isEmpty(Prefers.getString(DEVICE_CODE_KEY))) {
+            deviceCode = String.format(Locale.CHINA, "%04d",new Random().nextInt(9999));
+            Prefers.put(DEVICE_CODE_KEY, deviceCode);
+        } else {
+            deviceCode = Prefers.getString(DEVICE_CODE_KEY);
+        }
+
+        final EditText editText = new EditText(this);
+        AlertDialog.Builder inputDialog = new AlertDialog.Builder(this);
+        inputDialog.setCancelable(false);
+        editText.setHint("请输入四位接入码");
+        inputDialog.setTitle("你的设备码为"+deviceCode+",请输入接入码").setView(editText);
+        inputDialog.setPositiveButton("确定",
+                (dialog, which) -> entryCodeCheck(deviceCode, editText.getText().toString())).show();
+    }
+
+    private void entryCodeCheck(String deviceCode, String inputEntryCode) {
+        if (!Pattern.matches("^\\d{4}$", deviceCode)) {
+            Notify.show("接入码格式不正确");
+            finish();
+            return;
+        }
+
+        if (!inputEntryCode.equals(getEntryCode(deviceCode))) {
+            Notify.show("接入码格错误");
+            finish();
+            return;
+        }
+
+        Prefers.put(ENTRY_CODE_KEY, inputEntryCode);
+    }
+
+    private String getEntryCode(String deviceCode) {
+        int entryCode = Integer.parseInt(deviceCode) * ENCRYPTION_KEY % 10000;
+        return String.format(Locale.CHINA, "%04d",entryCode);
     }
 
     @Override

@@ -7,26 +7,22 @@ android {
     flavorDimensions "mode", "api"
 
     defaultConfig {
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments = ["room.schemaLocation":
-                                     "$projectDir/schemas".toString()]
-            }
-        }
         applicationId "com.fongmi.android.tv"
         minSdk 21
         targetSdk 29
-        versionCode 68
-        versionName "1.6.8"
         ndk { abiFilters "armeabi-v7a" }
     }
 
     productFlavors {
         leanback {
             dimension "mode"
+            versionCode 68
+            versionName "1.6.8"
         }
         mobile {
             dimension "mode"
+            versionCode 5
+            versionName "1.0.5"
         }
         java {
             dimension = "api"
@@ -69,7 +65,7 @@ dependencies {
     implementation project(':forcetech')
     implementation project(':ijkplayer')
     pythonImplementation project(':pyramid')
-    implementation 'androidx.appcompat:appcompat:1.6.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1'
     implementation 'androidx.lifecycle:lifecycle-viewmodel:2.5.1'
     implementation 'androidx.preference:preference:1.2.0'

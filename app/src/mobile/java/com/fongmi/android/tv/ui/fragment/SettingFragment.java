@@ -1,13 +1,16 @@
 package com.fongmi.android.tv.ui.fragment;
 
 import android.Manifest;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.viewbinding.ViewBinding;
 
+import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.BuildConfig;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.api.ApiConfig;
@@ -65,6 +68,14 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
     protected void initEvent() {
         mBinding.vodHome.setOnClickListener(view -> SiteDialog.create(this).all().show());
         mBinding.liveHome.setOnClickListener(view -> LiveDialog.create(this).show());
+        mBinding.url.setOnClickListener(view -> {
+            delayClick(mBinding.url);
+            Updater.get().force().updateUrl("url", getUrlCallback());
+        });
+        mBinding.urlBack.setOnClickListener(view -> {
+            delayClick(mBinding.urlBack);
+            Updater.get().force().updateUrl("url_back", getUrlCallback());
+        });
         mBinding.vod.setOnClickListener(view -> ConfigDialog.create(this).type(0).show());
         mBinding.live.setOnClickListener(view -> ConfigDialog.create(this).type(1).show());
         mBinding.wall.setOnClickListener(view -> ConfigDialog.create(this).type(2).show());
@@ -82,6 +93,11 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
             Updater.get().force().branch("dev").start();
             return true;
         });
+    }
+
+    private void delayClick(View view) {
+        view.setEnabled(false);
+        App.post(() -> view.setEnabled(true),3000);
     }
 
     @Override
@@ -115,6 +131,27 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
                 WallConfig.get().clear().config(config).load(getCallback());
                 break;
         }
+    }
+
+    private Callback getUrlCallback() {
+        return new Callback() {
+            @Override
+            public void success(Object url) {
+                if (url instanceof String && !TextUtils.isEmpty(((String) url))){
+                    App.post(() -> {
+                        Notify.show("获取成功：url=" + url);
+                        setConfig(Config.find((String) url, 0));
+                    });
+                } else {
+                    Notify.show(R.string.error_empty);
+                }
+            }
+
+            @Override
+            public void error(int resId) {
+                Notify.show(resId);
+            }
+        };
     }
 
     private Callback getCallback() {
