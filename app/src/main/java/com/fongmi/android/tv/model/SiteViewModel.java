@@ -4,6 +4,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
@@ -13,7 +14,6 @@ import com.fongmi.android.tv.bean.Result;
 import com.fongmi.android.tv.bean.Site;
 import com.fongmi.android.tv.bean.Vod;
 import com.fongmi.android.tv.net.OkHttp;
-import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.Utils;
 import com.github.catvod.crawler.Spider;
 import com.github.catvod.crawler.SpiderDebug;
@@ -166,22 +166,42 @@ public class SiteViewModel extends ViewModel {
             Spider spider = ApiConfig.get().getCSP(site);
             String searchContent = spider.searchContent(keyword, false);
             SpiderDebug.log(searchContent);
-            post(site, Result.fromJson(searchContent));
+            post(site, Result.fromJson(searchContent), keyword);
         } else {
             ArrayMap<String, String> params = new ArrayMap<>();
             params.put("wd", keyword);
             if (site.getType() != 0) params.put("ac", "detail");
             String body = OkHttp.newCall(site.getApi(), params).execute().body().string();
             SpiderDebug.log(site.getName() + "," + body);
-            if (site.getType() == 0) post(site, Result.fromXml(body));
-            else post(site, Result.fromJson(body));
+
+            if (site.getType() == 0) {
+                post(site, Result.fromXml(body), keyword);
+            }
+            else {
+                post(site, Result.fromJson(body), keyword);
+            }
         }
     }
 
-    private void post(Site site, Result result) {
-        if (result.getList().isEmpty()) return;
-        for (Vod vod : result.getList()) vod.setSite(site);
-        this.search.postValue(result);
+    private void post(Site site, Result result, String keyword) {
+        Result resultCopy = getFilteResult(result, keyword);
+        if (resultCopy.getList().isEmpty()) return;
+        for (Vod vod : resultCopy.getList()) {
+            vod.setSite(site);
+        }
+        this.search.postValue(resultCopy);
+    }
+
+    @NonNull
+    private Result getFilteResult(Result result, String keyword) {
+        Result resultCopy = new Result();
+        resultCopy.setList(new ArrayList<>());
+        for (Vod vod : result.getList()) {
+            if (vod.getVodName().contains(keyword)) {
+                resultCopy.getList().add(vod);
+            }
+        }
+        return resultCopy;
     }
 
     private void execute(MutableLiveData<Result> result, Callable<Result> callable) {
