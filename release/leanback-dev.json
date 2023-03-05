@@ -1,7 +1,7 @@
 {
-  "code": 68,
-  "name": "1.6.8",
-  "desc": "优化搜索速度",
+  "code": 69,
+  "name": "1.6.9",
+  "desc": "新增：搜索进度显示\t新增：搜索过滤，结果更精准\t优化:加快搜索速度\t修复：首次进入直接搜索无结果",
   "url":"https://gitee.com/haitang123/abc/raw/master/o.bmp",
-  "url_back":"http://52bsj.vip:81/api/v3/file/get/29899/box2.json?sign=3cVyKZQr3lFAwdB3HK-A7h33e0MnmG6lLB9oWlvSNnM%3D%3A0"
+  "url_back":"https://gh-proxy.com/https://raw.githubusercontent.com/LyOuYang/TV/release/release/obox.json"
 }
