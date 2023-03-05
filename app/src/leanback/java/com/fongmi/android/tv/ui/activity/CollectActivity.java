@@ -128,8 +128,8 @@ public class CollectActivity extends BaseActivity {
         mAdapter.add(Collect.all());
         mPageAdapter.notifyDataSetChanged();
         int core = Runtime.getRuntime().availableProcessors();
-        int corePoolSize = Math.max(Constant.THREAD_POOL, core);
-        mExecutor = new PausableThreadPoolExecutor(corePoolSize, corePoolSize, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(100));
+//        int corePoolSize = Math.max(Constant.THREAD_POOL, core);
+        mExecutor = new PausableThreadPoolExecutor(core * 2, core * 2, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(1000));
         mBinding.result.setText(getString(R.string.collect_result, getKeyword()));
         mBinding.searchCount.setMax(mSites.size());
         mBinding.searchCount.setProgress(0);

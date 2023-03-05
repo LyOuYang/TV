@@ -124,7 +124,10 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         inputDialog.setCancelable(false);
         inputDialog.setTitle("请输入接入码").setView(editText);
         inputDialog.setPositiveButton("确定",
-                (dialog, which) -> entryCodeCheck(editText.getText().toString())).show();
+                (dialog, which) -> {
+                    entryCodeCheck(editText.getText().toString());
+                    dialog.dismiss();
+                }).show();
     }
 
     private void entryCodeCheck(String entryCode) {

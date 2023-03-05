@@ -12,7 +12,7 @@ public class PausableThreadPoolExecutor extends ThreadPoolExecutor {
     private Condition unpaused = pauseLock.newCondition();
 
     public PausableThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
-        super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
+        super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue,new ThreadPoolExecutor.DiscardPolicy());
     }
 
     protected void beforeExecute(Thread t, Runnable r) {
