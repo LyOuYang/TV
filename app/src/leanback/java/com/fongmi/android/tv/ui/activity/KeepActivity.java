@@ -14,6 +14,7 @@ import com.fongmi.android.tv.databinding.ActivityKeepBinding;
 import com.fongmi.android.tv.event.RefreshEvent;
 import com.fongmi.android.tv.net.Callback;
 import com.fongmi.android.tv.ui.adapter.KeepAdapter;
+import com.fongmi.android.tv.ui.base.BaseActivity;
 import com.fongmi.android.tv.ui.custom.SpaceItemDecoration;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -51,21 +52,6 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
         mAdapter.addAll(Keep.getVod());
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onRefreshEvent(RefreshEvent event) {
-        if (event.getType() == RefreshEvent.Type.KEEP) getKeep();
-    }
-
-    @Override
-    public void onItemClick(Keep item) {
-        Config config = Config.find(item.getCid());
-        if (item.getCid() == ApiConfig.getCid()) {
-            DetailActivity.start(this, item.getSiteKey(), item.getVodId(), item.getVodName());
-        } else {
-            loadConfig(config, item);
-        }
-    }
-
     private void loadConfig(Config config, Keep item) {
         ApiConfig.get().clear().config(config).load(true, new Callback() {
             @Override
@@ -80,6 +66,18 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
                 CollectActivity.start(getActivity(), item.getVodName());
             }
         });
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onRefreshEvent(RefreshEvent event) {
+        if (event.getType() == RefreshEvent.Type.KEEP) getKeep();
+    }
+
+    @Override
+    public void onItemClick(Keep item) {
+        Config config = Config.find(item.getCid());
+        if (item.getCid() != ApiConfig.getCid()) loadConfig(config, item);
+        else DetailActivity.start(this, item.getSiteKey(), item.getVodId(), item.getVodName());
     }
 
     @Override

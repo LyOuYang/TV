@@ -4,7 +4,6 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.fongmi.android.tv.bean.Filter;
@@ -23,16 +22,6 @@ public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.ViewHolder
         this.mItems = items;
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
-
-        private final AdapterFilterBinding binding;
-
-        ViewHolder(@NonNull AdapterFilterBinding binding) {
-            super(binding.getRoot());
-            this.binding = binding;
-        }
-    }
-
     @Override
     public int getItemCount() {
         return mItems.size();
@@ -49,7 +38,16 @@ public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.ViewHolder
         Filter item = mItems.get(position);
         holder.binding.recycler.setHasFixedSize(true);
         holder.binding.recycler.setItemAnimator(null);
-        holder.binding.recycler.setLayoutManager(new LinearLayoutManager(holder.itemView.getContext(), LinearLayoutManager.HORIZONTAL, false));
         holder.binding.recycler.setAdapter(new ValueAdapter(mListener, item));
+    }
+
+    static class ViewHolder extends RecyclerView.ViewHolder {
+
+        private final AdapterFilterBinding binding;
+
+        ViewHolder(@NonNull AdapterFilterBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
+        }
     }
 }

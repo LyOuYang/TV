@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.fongmi.android.tv.Product;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.api.ApiConfig;
 import com.fongmi.android.tv.bean.History;
@@ -28,7 +27,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
     public HistoryAdapter(OnClickListener listener) {
         this.mListener = listener;
         this.mItems = new ArrayList<>();
-        setLayoutSize();
     }
 
     public interface OnClickListener {
@@ -40,11 +38,9 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
         boolean onLongClick();
     }
 
-    private void setLayoutSize() {
-        int space = ResUtil.dp2px(32) + ResUtil.dp2px(16 * (Product.getColumn() - 1));
-        int base = ResUtil.getScreenWidthPx() - space;
-        width = base / Product.getColumn();
-        height = (int) (width / 0.75f);
+    public void setSize(int[] size) {
+        this.width = size[0];
+        this.height = size[1];
     }
 
     public boolean isDelete() {
@@ -53,6 +49,20 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
 
     public void setDelete(boolean delete) {
         this.delete = delete;
+        notifyItemRangeChanged(0, mItems.size());
+    }
+
+    public void addAll(List<History> items) {
+        mItems.clear();
+        mItems.addAll(items);
+        notifyDataSetChanged();
+    }
+
+    public void clear() {
+        mItems.clear();
+        setDelete(false);
+        notifyDataSetChanged();
+        History.delete(ApiConfig.getCid());
     }
 
     public void remove(History item) {
@@ -60,22 +70,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
         if (position == -1) return;
         mItems.remove(position);
         notifyItemRemoved(position);
-    }
-
-    static class ViewHolder extends RecyclerView.ViewHolder {
-
-        private final AdapterVodBinding binding;
-
-        ViewHolder(@NonNull AdapterVodBinding binding) {
-            super(binding.getRoot());
-            this.binding = binding;
-        }
-    }
-
-    public void addAll(List<History> items) {
-        mItems.clear();
-        mItems.addAll(items);
-        notifyDataSetChanged();
     }
 
     @Override
@@ -107,9 +101,19 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
 
     private void setClickListener(View root, History item) {
         root.setOnLongClickListener(view -> mListener.onLongClick());
-        root.setOnClickListener(v -> {
+        root.setOnClickListener(view -> {
             if (isDelete()) mListener.onItemDelete(item);
             else mListener.onItemClick(item);
         });
+    }
+
+    static class ViewHolder extends RecyclerView.ViewHolder {
+
+        private final AdapterVodBinding binding;
+
+        ViewHolder(@NonNull AdapterVodBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
+        }
     }
 }

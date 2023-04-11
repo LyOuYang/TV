@@ -11,16 +11,11 @@
     <string name="home_history">History</string>
     <string name="home_recommend">Recommend</string>
 
-    <!-- Search -->
-    <string name="search_keyword">Keywords…</string>
-    <string name="search_history">History</string>
-    <string name="search_suggest">Suggest</string>
-    <string name="search_hot">Hot</string>
-
     <!-- Collect -->
     <string name="collect_result">Search results for <xliff:g name="name">%s</xliff:g></string>
 
     <!-- Push -->
+    <string name="push_clip">Push clipboard content</string>
     <string name="push_info">Scan QR Code or enter the URL in browser\n<xliff:g name="name">%s</xliff:g></string>
 
 </resources>

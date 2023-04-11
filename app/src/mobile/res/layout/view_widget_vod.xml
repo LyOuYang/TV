@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -56,52 +57,96 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/state"
+        android:id="@+id/seek"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
+        android:layout_gravity="top|center"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/shape_widget"
         android:gravity="center"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:visibility="gone"
         tools:visibility="visible">
 
         <ImageView
             android:id="@+id/action"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_control_play" />
-
-        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_marginEnd="8dp"
+            android:src="@drawable/ic_widget_rewind" />
 
-            <TextView
-                android:id="@+id/position"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/white"
-                android:textSize="12sp"
-                tools:text="00:00:00" />
+        <TextView
+            android:id="@+id/time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            tools:text="00:00:00" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="2dp"
-                android:layout_marginEnd="2dp"
-                android:text="/"
-                android:textColor="@color/white"
-                android:textSize="12sp" />
+    </LinearLayout>
 
-            <TextView
-                android:id="@+id/duration"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/white"
-                android:textSize="12sp"
-                tools:text="00:00:00" />
+    <ImageView
+        android:id="@+id/speed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center"
+        android:layout_marginTop="24dp"
+        android:src="@drawable/ic_widget_forward"
+        android:visibility="gone" />
 
-        </LinearLayout>
+    <LinearLayout
+        android:id="@+id/bright"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/shape_widget"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <ImageView
+            android:id="@+id/brightIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            tools:src="@drawable/ic_widget_bright_high" />
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/brightProgress"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            app:indicatorColor="@color/white"
+            app:trackColor="@color/grey_500" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/volume"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/shape_widget"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <ImageView
+            android:id="@+id/volumeIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            tools:src="@drawable/ic_widget_volume_high" />
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/volumeProgress"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            app:indicatorColor="@color/white"
+            app:trackColor="@color/grey_500" />
+
     </LinearLayout>
 </FrameLayout>

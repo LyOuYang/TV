@@ -12,6 +12,9 @@ import androidx.leanback.widget.ArrayObjectAdapter;
 import androidx.leanback.widget.ItemBridgeAdapter;
 import androidx.leanback.widget.OnChildViewHolderSelectedListener;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.media3.common.C;
+import androidx.media3.common.Player;
+import androidx.media3.ui.PlayerView;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewbinding.ViewBinding;
 
@@ -36,6 +39,7 @@ import com.fongmi.android.tv.player.Players;
 import com.fongmi.android.tv.player.source.Force;
 import com.fongmi.android.tv.player.source.TVBus;
 import com.fongmi.android.tv.player.source.ZLive;
+import com.fongmi.android.tv.ui.base.BaseActivity;
 import com.fongmi.android.tv.ui.custom.CustomKeyDownLive;
 import com.fongmi.android.tv.ui.custom.CustomLiveListView;
 import com.fongmi.android.tv.ui.custom.dialog.LiveDialog;
@@ -48,9 +52,6 @@ import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.Prefers;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.fongmi.android.tv.utils.Traffic;
-import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.Player;
-import com.google.android.exoplayer2.ui.StyledPlayerView;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -92,7 +93,7 @@ public class LiveActivity extends BaseActivity implements GroupPresenter.OnClick
         if (!LiveConfig.isEmpty()) activity.startActivity(new Intent(activity, LiveActivity.class));
     }
 
-    private StyledPlayerView getExo() {
+    private PlayerView getExo() {
         return Prefers.getRender() == 0 ? mBinding.surface : mBinding.texture;
     }
 
@@ -110,14 +111,6 @@ public class LiveActivity extends BaseActivity implements GroupPresenter.OnClick
 
     private int getPlayerType() {
         return getHome().getPlayerType() != -1 ? getHome().getPlayerType() : Prefers.getLivePlayer();
-    }
-
-    private boolean isVisible(View view) {
-        return view.getVisibility() == View.VISIBLE;
-    }
-
-    private boolean isGone(View view) {
-        return view.getVisibility() == View.GONE;
     }
 
     @Override
@@ -322,7 +315,7 @@ public class LiveActivity extends BaseActivity implements GroupPresenter.OnClick
 
     private void onTrack(View view) {
         int type = Integer.parseInt(view.getTag().toString());
-        TrackDialog.create(this).player(mPlayers).type(type).show();
+        TrackDialog.create().player(mPlayers).type(type).show(getSupportFragmentManager(), null);
         hideControl();
     }
 
@@ -379,7 +372,7 @@ public class LiveActivity extends BaseActivity implements GroupPresenter.OnClick
     }
 
     private void hideCenter() {
-        mBinding.widget.action.setImageResource(R.drawable.ic_play);
+        mBinding.widget.action.setImageResource(R.drawable.ic_widget_play);
         mBinding.widget.center.setVisibility(View.GONE);
     }
 
@@ -549,7 +542,7 @@ public class LiveActivity extends BaseActivity implements GroupPresenter.OnClick
         if (!mPlayers.isVod() || !mChannel.isOnly()) return;
         mBinding.widget.exoDuration.setText(mPlayers.getDurationTime());
         mBinding.widget.exoPosition.setText(mPlayers.getPositionTime(time));
-        mBinding.widget.action.setImageResource(time > 0 ? R.drawable.ic_forward : R.drawable.ic_rewind);
+        mBinding.widget.action.setImageResource(time > 0 ? R.drawable.ic_widget_forward : R.drawable.ic_widget_rewind);
         mBinding.widget.center.setVisibility(View.VISIBLE);
         hideProgress();
     }

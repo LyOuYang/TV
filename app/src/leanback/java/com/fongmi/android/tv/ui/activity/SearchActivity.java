@@ -18,10 +18,11 @@ import com.fongmi.android.tv.bean.Suggest;
 import com.fongmi.android.tv.databinding.ActivitySearchBinding;
 import com.fongmi.android.tv.net.Callback;
 import com.fongmi.android.tv.net.OkHttp;
-import com.fongmi.android.tv.ui.adapter.HistoryAdapter;
+import com.fongmi.android.tv.ui.adapter.RecordAdapter;
 import com.fongmi.android.tv.ui.adapter.WordAdapter;
+import com.fongmi.android.tv.ui.base.BaseActivity;
 import com.fongmi.android.tv.ui.custom.CustomKeyboard;
-import com.fongmi.android.tv.ui.custom.CustomListener;
+import com.fongmi.android.tv.ui.custom.CustomTextListener;
 import com.fongmi.android.tv.ui.custom.SpaceItemDecoration;
 import com.fongmi.android.tv.ui.custom.dialog.SiteDialog;
 import com.fongmi.android.tv.utils.Utils;
@@ -32,10 +33,10 @@ import java.util.List;
 import okhttp3.Call;
 import okhttp3.Response;
 
-public class SearchActivity extends BaseActivity implements WordAdapter.OnClickListener, HistoryAdapter.OnClickListener, CustomKeyboard.Callback {
+public class SearchActivity extends BaseActivity implements WordAdapter.OnClickListener, RecordAdapter.OnClickListener, CustomKeyboard.Callback {
 
     private ActivitySearchBinding mBinding;
-    private HistoryAdapter mHistoryAdapter;
+    private RecordAdapter mRecordAdapter;
     private WordAdapter mWordAdapter;
 
     public static void start(Activity activity) {
@@ -60,14 +61,14 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
             if (actionId == EditorInfo.IME_ACTION_DONE) onSearch();
             return true;
         });
-        mBinding.keyword.addTextChangedListener(new CustomListener() {
+        mBinding.keyword.addTextChangedListener(new CustomTextListener() {
             @Override
             public void afterTextChanged(Editable s) {
                 if (s.toString().isEmpty()) getHot();
                 else getSuggest(s.toString());
             }
         });
-        mBinding.mic.setListener(this, new CustomListener() {
+        mBinding.mic.setListener(this, new CustomTextListener() {
             @Override
             public void onEndOfSpeech() {
                 mBinding.mic.stop();
@@ -85,9 +86,9 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
         mBinding.wordRecycler.setHasFixedSize(true);
         mBinding.wordRecycler.addItemDecoration(new SpaceItemDecoration(1, 16));
         mBinding.wordRecycler.setAdapter(mWordAdapter = new WordAdapter(this));
-        mBinding.historyRecycler.setHasFixedSize(true);
-        mBinding.historyRecycler.addItemDecoration(new SpaceItemDecoration(1, 16));
-        mBinding.historyRecycler.setAdapter(mHistoryAdapter = new HistoryAdapter(this));
+        mBinding.recordRecycler.setHasFixedSize(true);
+        mBinding.recordRecycler.addItemDecoration(new SpaceItemDecoration(1, 16));
+        mBinding.recordRecycler.setAdapter(mRecordAdapter = new RecordAdapter(this));
     }
 
     private void getHot() {
@@ -120,17 +121,18 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
 
     @Override
     public void onDataChanged(int size) {
-        mBinding.historyLayout.setVisibility(size == 0 ? View.GONE : View.VISIBLE);
+        mBinding.recordLayout.setVisibility(size == 0 ? View.GONE : View.VISIBLE);
     }
 
     @Override
     public void onSearch() {
+        mBinding.mic.setFocusable(false);
         String keyword = mBinding.keyword.getText().toString().trim();
         mBinding.keyword.setSelection(mBinding.keyword.length());
         Utils.hideKeyboard(mBinding.keyword);
         if (TextUtils.isEmpty(keyword)) return;
         CollectActivity.start(this, keyword);
-        App.post(() -> mHistoryAdapter.add(keyword), 250);
+        App.post(() -> mRecordAdapter.add(keyword), 250);
     }
 
     @Override
@@ -141,7 +143,7 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
 
     @Override
     public void showDialog() {
-        SiteDialog.create(this).search(true).show();
+        SiteDialog.create(this).search().show();
     }
 
     @Override
@@ -153,5 +155,6 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
     protected void onResume() {
         super.onResume();
         mBinding.keyword.requestFocus();
+        mBinding.mic.setFocusable(true);
     }
 }

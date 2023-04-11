@@ -17,6 +17,9 @@ import androidx.leanback.widget.ArrayObjectAdapter;
 import androidx.leanback.widget.ItemBridgeAdapter;
 import androidx.leanback.widget.OnChildViewHolderSelectedListener;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.media3.common.C;
+import androidx.media3.common.Player;
+import androidx.media3.ui.PlayerView;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewbinding.ViewBinding;
 
@@ -41,6 +44,7 @@ import com.fongmi.android.tv.net.Callback;
 import com.fongmi.android.tv.net.OkHttp;
 import com.fongmi.android.tv.player.ExoUtil;
 import com.fongmi.android.tv.player.Players;
+import com.fongmi.android.tv.ui.base.BaseActivity;
 import com.fongmi.android.tv.ui.custom.CustomKeyDownVod;
 import com.fongmi.android.tv.ui.custom.dialog.DescDialog;
 import com.fongmi.android.tv.ui.custom.dialog.TrackDialog;
@@ -56,9 +60,6 @@ import com.fongmi.android.tv.utils.Prefers;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.fongmi.android.tv.utils.Traffic;
 import com.fongmi.android.tv.utils.Utils;
-import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.Player;
-import com.google.android.exoplayer2.ui.StyledPlayerView;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -91,13 +92,14 @@ public class DetailActivity extends BaseActivity implements CustomKeyDownVod.Lis
     private CustomKeyDownVod mKeyDown;
     private ExecutorService mExecutor;
     private SiteViewModel mViewModel;
-    private boolean mFullscreen;
-    private boolean mInitTrack;
-    private boolean mInitAuto;
-    private boolean mAutoMode;
     private History mHistory;
     private Players mPlayers;
     private String mSiteKey;
+    private boolean fullscreen;
+    private boolean initTrack;
+    private boolean initAuto;
+    private boolean autoMode;
+    private boolean useParse;
     private int mCurrent;
     private Runnable mR1;
     private Runnable mR2;
@@ -165,20 +167,12 @@ public class DetailActivity extends BaseActivity implements CustomKeyDownVod.Lis
         return mHistory != null && mHistory.getScale() != -1 ? mHistory.getScale() : Prefers.getScale();
     }
 
-    private StyledPlayerView getExo() {
+    private PlayerView getExo() {
         return Prefers.getRender() == 0 ? mBinding.surface : mBinding.texture;
     }
 
     private IjkVideoView getIjk() {
         return mBinding.ijk;
-    }
-
-    private boolean isVisible(View view) {
-        return view.getVisibility() == View.VISIBLE;
-    }
-
-    private boolean isGone(View view) {
-        return view.getVisibility() == View.GONE;
     }
 
     private boolean isReplay() {
@@ -196,7 +190,7 @@ public class DetailActivity extends BaseActivity implements CustomKeyDownVod.Lis
 
     @Override
     protected void initView() {
-        mKeyDown = CustomKeyDownVod.create(this);
+        mKeyDown = CustomKeyDownVod.create(this, mBinding.video);
         mFrameParams = mBinding.video.getLayoutParams();
         mBinding.progressLayout.showProgress();
         mPlayers = new Players().init();
@@ -284,6 +278,7 @@ public class DetailActivity extends BaseActivity implements CustomKeyDownVod.Lis
         mPlayers.set(getExo(), getIjk());
         getIjk().setRender(Prefers.getRender());
         getExo().getSubtitleView().setStyle(ExoUtil.getCaptionStyle());
+        getIjk().getSubtitleView().setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
     }
 
     private void setScale(int scale) {
@@ -296,10 +291,10 @@ public class DetailActivity extends BaseActivity implements CustomKeyDownVod.Lis
         mViewModel = new ViewModelProvider(this).get(SiteViewModel.class);
         mViewModel.search.observe(this, result -> setSearch(result.getList()));
         mViewModel.player.observe(this, result -> {
-            boolean useParse = ApiConfig.hasParse() && ((result.getPlayUrl().isEmpty() && ApiConfig.get().getFlags().contains(result.getFlag())) || result.getJx() == 1);
-            mBinding.control.parseLayout.setVisibility(useParse ? View.VISIBLE : View.GONE);
+            setUseParse(ApiConfig.hasParse() && ((result.getPlayUrl().isEmpty() && ApiConfig.get().getFlags().contains(result.getFlag())) || result.getJx() == 1));
+            mBinding.control.parseLayout.setVisibility(isUseParse() ? View.VISIBLE : View.GONE);
             int timeout = getSite().isChangeable() ? Constant.TIMEOUT_PLAY : -1;
-            mPlayers.start(result, useParse, timeout);
+            mPlayers.start(result, isUseParse(), timeout);
             resetFocus();
         });
         mViewModel.result.observe(this, result -> {
@@ -310,10 +305,9 @@ public class DetailActivity extends BaseActivity implements CustomKeyDownVod.Lis
     }
 
     private void resetFocus() {
-        boolean useParse = isVisible(mBinding.control.parseLayout);
-        findViewById(R.id.timeBar).setNextFocusUpId(useParse ? R.id.parse : R.id.next);
+        findViewById(R.id.timeBar).setNextFocusUpId(isUseParse() ? R.id.parse : R.id.next);
         for (int i = 0; i < mBinding.control.actionLayout.getChildCount(); i++) {
-            mBinding.control.actionLayout.getChildAt(i).setNextFocusDownId(useParse ? R.id.parse : R.id.timeBar);
+            mBinding.control.actionLayout.getChildAt(i).setNextFocusDownId(isUseParse() ? R.id.parse : R.id.timeBar);
         }
     }
 
@@ -337,6 +331,7 @@ public class DetailActivity extends BaseActivity implements CustomKeyDownVod.Lis
         mViewModel.playerContent(getKey(), flag.getFlag(), episode.getUrl());
         updateHistory(episode, replay);
         showProgress();
+        hideCenter();
     }
 
     private void setEmpty() {
@@ -419,7 +414,7 @@ public class DetailActivity extends BaseActivity implements CustomKeyDownVod.Lis
     private void reverseEpisode(boolean scroll) {
         for (int i = 0; i < mFlagAdapter.size(); i++) Collections.reverse(((Vod.Flag) mFlagAdapter.get(i)).getEpisodes());
         setEpisodeAdapter(getFlag().getEpisodes());
-        mBinding.episode.setSelectedPosition(getEpisodePosition());
+        if (scroll) mBinding.episode.setSelectedPosition(getEpisodePosition());
     }
 
     private void setParseActivated(Parse item) {
@@ -435,7 +430,7 @@ public class DetailActivity extends BaseActivity implements CustomKeyDownVod.Lis
         mEpisodePresenter.setNextFocusDown(size > 1 ? R.id.array : R.id.part);
         mPartPresenter.setNextFocusUp(size > 1 ? R.id.array : R.id.episode);
         mBinding.array.setVisibility(size > 1 ? View.VISIBLE : View.GONE);
-        if (mHistory.isRevSort()) for (int i = size + 1; i > 0; i -= 20) items.add((i - 1) + "-" + Math.max(i - 20, 1));
+        if (mHistory.isRevSort()) for (int i = size; i > 0; i -= 20) items.add(i + "-" + Math.max(i - 19, 1));
         else for (int i = 0; i < size; i += 20) items.add((i + 1) + "-" + Math.min(i + 20, size));
         mArrayAdapter.setItems(items, null);
     }
@@ -443,7 +438,7 @@ public class DetailActivity extends BaseActivity implements CustomKeyDownVod.Lis
     @Override
     public void onRevSort() {
         mHistory.setRevSort(!mHistory.isRevSort());
-        reverseEpisode();
+        reverseEpisode(false);
     }
 
     @Override
@@ -464,7 +459,8 @@ public class DetailActivity extends BaseActivity implements CustomKeyDownVod.Lis
         getIjk().getSubtitleView().setTextSize(TypedValue.COMPLEX_UNIT_SP, 24);
         mBinding.video.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
         mBinding.flag.setSelectedPosition(mCurrent);
-        App.post(() -> setFullscreen(true), 250);
+        mKeyDown.setFull(true);
+        setFullscreen(true);
         onPlay();
     }
 
@@ -472,12 +468,13 @@ public class DetailActivity extends BaseActivity implements CustomKeyDownVod.Lis
         mBinding.video.setForeground(ResUtil.getDrawable(R.drawable.selector_video));
         getIjk().getSubtitleView().setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
         mBinding.video.setLayoutParams(mFrameParams);
+        mKeyDown.setFull(false);
         setFullscreen(false);
         hideInfo();
     }
 
     private void onDesc() {
-        String desc = mBinding.content.getTag().toString().trim();
+        String desc = mBinding.content.getTag().toString();
         if (desc.length() > 0) DescDialog.show(this, desc);
     }
 
@@ -604,7 +601,7 @@ public class DetailActivity extends BaseActivity implements CustomKeyDownVod.Lis
 
     private void onTrack(View view) {
         int type = Integer.parseInt(view.getTag().toString());
-        TrackDialog.create(this).player(mPlayers).type(type).listener(this).show();
+        TrackDialog.create().player(mPlayers).type(type).listener(this).show(getSupportFragmentManager(), null);
         hideControl();
     }
 
@@ -657,7 +654,7 @@ public class DetailActivity extends BaseActivity implements CustomKeyDownVod.Lis
     }
 
     private void hideCenter() {
-        mBinding.widget.action.setImageResource(R.drawable.ic_play);
+        mBinding.widget.action.setImageResource(R.drawable.ic_widget_play);
         hideInfo();
     }
 
@@ -697,7 +694,7 @@ public class DetailActivity extends BaseActivity implements CustomKeyDownVod.Lis
         mHistory = History.find(getHistoryKey());
         mHistory = mHistory == null ? createHistory(item) : mHistory;
         setFlagActivated(mHistory.getFlag());
-        if (mHistory.isRevSort()) reverseEpisode();
+        if (mHistory.isRevSort()) reverseEpisode(true);
         mBinding.control.opening.setText(mHistory.getOpening() == 0 ? getString(R.string.play_op) : mPlayers.stringToTime(mHistory.getOpening()));
         mBinding.control.ending.setText(mHistory.getEnding() == 0 ? getString(R.string.play_ed) : mPlayers.stringToTime(mHistory.getEnding()));
         mBinding.control.speed.setText(mPlayers.setSpeed(mHistory.getSpeed()));
@@ -728,7 +725,7 @@ public class DetailActivity extends BaseActivity implements CustomKeyDownVod.Lis
     }
 
     private void checkKeep() {
-        mBinding.keep.setCompoundDrawablesRelativeWithIntrinsicBounds(Keep.find(getHistoryKey()) == null ? R.drawable.ic_keep_not_yet : R.drawable.ic_keep_added, 0, 0, 0);
+        mBinding.keep.setCompoundDrawablesRelativeWithIntrinsicBounds(Keep.find(getHistoryKey()) == null ? R.drawable.ic_detail_keep_off : R.drawable.ic_detail_keep_on, 0, 0, 0);
     }
 
     private void createKeep() {
@@ -820,7 +817,7 @@ public class DetailActivity extends BaseActivity implements CustomKeyDownVod.Lis
 
     private void startFlow() {
         if (!getSite().isChangeable()) return;
-        if (isVisible(mBinding.control.parseLayout)) checkParse();
+        if (isUseParse()) checkParse();
         else checkFlag();
     }
 
@@ -934,35 +931,43 @@ public class DetailActivity extends BaseActivity implements CustomKeyDownVod.Lis
     }
 
     private boolean isFullscreen() {
-        return mFullscreen;
+        return fullscreen;
     }
 
     private void setFullscreen(boolean fullscreen) {
-        this.mFullscreen = fullscreen;
+        this.fullscreen = fullscreen;
     }
 
     private boolean isInitTrack() {
-        return mInitTrack;
+        return initTrack;
     }
 
     private void setInitTrack(boolean initTrack) {
-        this.mInitTrack = initTrack;
+        this.initTrack = initTrack;
     }
 
     private boolean isInitAuto() {
-        return mInitAuto;
+        return initAuto;
     }
 
     private void setInitAuto(boolean initAuto) {
-        this.mInitAuto = initAuto;
+        this.initAuto = initAuto;
     }
 
     private boolean isAutoMode() {
-        return mAutoMode;
+        return autoMode;
     }
 
     private void setAutoMode(boolean autoMode) {
-        this.mAutoMode = autoMode;
+        this.autoMode = autoMode;
+    }
+
+    public boolean isUseParse() {
+        return useParse;
+    }
+
+    public void setUseParse(boolean useParse) {
+        this.useParse = useParse;
     }
 
     private void notifyItemChanged(RecyclerView view, ArrayObjectAdapter adapter) {
@@ -978,10 +983,38 @@ public class DetailActivity extends BaseActivity implements CustomKeyDownVod.Lis
     }
 
     @Override
+    public void onBright(int progress) {
+        mBinding.widget.bright.setVisibility(View.VISIBLE);
+        mBinding.widget.brightProgress.setProgress(progress);
+        if (progress < 35) mBinding.widget.brightIcon.setImageResource(R.drawable.ic_widget_bright_low);
+        else if (progress < 70) mBinding.widget.brightIcon.setImageResource(R.drawable.ic_widget_bright_medium);
+        else mBinding.widget.brightIcon.setImageResource(R.drawable.ic_widget_bright_high);
+    }
+
+    @Override
+    public void onBrightEnd() {
+        mBinding.widget.bright.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onVolume(int progress) {
+        mBinding.widget.volume.setVisibility(View.VISIBLE);
+        mBinding.widget.volumeProgress.setProgress(progress);
+        if (progress < 35) mBinding.widget.volumeIcon.setImageResource(R.drawable.ic_widget_volume_low);
+        else if (progress < 70) mBinding.widget.volumeIcon.setImageResource(R.drawable.ic_widget_volume_medium);
+        else mBinding.widget.volumeIcon.setImageResource(R.drawable.ic_widget_volume_high);
+    }
+
+    @Override
+    public void onVolumeEnd() {
+        mBinding.widget.volume.setVisibility(View.GONE);
+    }
+
+    @Override
     public void onSeeking(int time) {
         mBinding.widget.exoDuration.setText(mPlayers.getDurationTime());
         mBinding.widget.exoPosition.setText(mPlayers.getPositionTime(time));
-        mBinding.widget.action.setImageResource(time > 0 ? R.drawable.ic_forward : R.drawable.ic_rewind);
+        mBinding.widget.action.setImageResource(time > 0 ? R.drawable.ic_widget_forward : R.drawable.ic_widget_rewind);
         mBinding.widget.center.setVisibility(View.VISIBLE);
         hideProgress();
     }
@@ -1048,7 +1081,9 @@ public class DetailActivity extends BaseActivity implements CustomKeyDownVod.Lis
 
     @Override
     public void onBackPressed() {
-        if (isVisible(mBinding.control.getRoot())) {
+        if (isVisible(mBinding.widget.center)) {
+            hideCenter();
+        } else if (isVisible(mBinding.control.getRoot())) {
             hideControl();
         } else if (isFullscreen()) {
             exitFullscreen();

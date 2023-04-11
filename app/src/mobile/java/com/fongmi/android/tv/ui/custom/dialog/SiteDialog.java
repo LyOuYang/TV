@@ -1,5 +1,6 @@
 package com.fongmi.android.tv.ui.custom.dialog;
 
+import android.app.Activity;
 import android.view.LayoutInflater;
 
 import androidx.appcompat.app.AlertDialog;
@@ -20,8 +21,19 @@ public class SiteDialog implements SiteAdapter.OnClickListener {
     private final SiteAdapter adapter;
     private final AlertDialog dialog;
 
+    public static SiteDialog create(Activity activity) {
+        return new SiteDialog(activity);
+    }
+
     public static SiteDialog create(Fragment fragment) {
         return new SiteDialog(fragment);
+    }
+
+    public SiteDialog(Activity activity) {
+        this.callback = (activity instanceof SiteCallback) ? (SiteCallback) activity : null;
+        this.binding = DialogSiteBinding.inflate(LayoutInflater.from(activity));
+        this.dialog = new MaterialAlertDialogBuilder(activity).setView(binding.getRoot()).create();
+        this.adapter = new SiteAdapter(this);
     }
 
     public SiteDialog(Fragment fragment) {
@@ -31,13 +43,19 @@ public class SiteDialog implements SiteAdapter.OnClickListener {
         this.adapter = new SiteAdapter(this);
     }
 
-    public SiteDialog search(boolean search) {
-        this.adapter.search(search);
+    public SiteDialog search() {
+        this.adapter.search(true);
+        return this;
+    }
+
+    public SiteDialog change() {
+        this.adapter.change(true);
         return this;
     }
 
     public SiteDialog all() {
         this.adapter.search(true);
+        this.adapter.change(true);
         return this;
     }
 
@@ -68,15 +86,31 @@ public class SiteDialog implements SiteAdapter.OnClickListener {
     }
 
     @Override
-    public void onSearchClick(Site item) {
+    public void onSearchClick(int position, Site item) {
         item.setSearchable(!item.isSearchable()).save();
-        adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+        adapter.notifyItemChanged(position);
+        callback.onChanged();
+    }
+
+    @Override
+    public void onChangeClick(int position, Site item) {
+        item.setChangeable(!item.isChangeable()).save();
+        adapter.notifyItemChanged(position);
     }
 
     @Override
     public boolean onSearchLongClick(Site item) {
         boolean result = !item.isSearchable();
         for (Site site : ApiConfig.get().getSites()) site.setSearchable(result).save();
+        adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+        callback.onChanged();
+        return true;
+    }
+
+    @Override
+    public boolean onChangeLongClick(Site item) {
+        boolean result = !item.isChangeable();
+        for (Site site : ApiConfig.get().getSites()) site.setChangeable(result).save();
         adapter.notifyItemRangeChanged(0, adapter.getItemCount());
         return true;
     }

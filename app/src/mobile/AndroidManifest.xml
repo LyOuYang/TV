@@ -16,7 +16,6 @@
             android:name=".ui.activity.MainActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:exported="true"
-            android:launchMode="singleTask"
             android:screenOrientation="userPortrait"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
@@ -28,11 +27,20 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="video/*" />
+                <data android:scheme="content" />
+                <data android:scheme="file" />
+            </intent-filter>
         </activity>
 
         <activity
             android:name=".ui.activity.DetailActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:excludeFromRecents="true"
             android:launchMode="singleTask"
             android:resizeableActivity="true"
             android:screenOrientation="fullUser"
@@ -41,6 +49,16 @@
 
         <activity
             android:name=".ui.activity.CollectActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:screenOrientation="userPortrait" />
+
+        <activity
+            android:name=".ui.activity.HistoryActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:screenOrientation="userPortrait" />
+
+        <activity
+            android:name=".ui.activity.KeepActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:screenOrientation="userPortrait" />
 

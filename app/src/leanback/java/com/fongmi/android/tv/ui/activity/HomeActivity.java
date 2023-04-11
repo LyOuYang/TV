@@ -20,9 +20,9 @@ import androidx.viewbinding.ViewBinding;
 import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.Product;
 import com.fongmi.android.tv.R;
+import com.fongmi.android.tv.Updater;
 import com.fongmi.android.tv.api.ApiConfig;
 import com.fongmi.android.tv.api.LiveConfig;
-import com.fongmi.android.tv.api.Updater;
 import com.fongmi.android.tv.api.WallConfig;
 import com.fongmi.android.tv.bean.Func;
 import com.fongmi.android.tv.bean.History;
@@ -35,6 +35,7 @@ import com.fongmi.android.tv.event.ServerEvent;
 import com.fongmi.android.tv.model.SiteViewModel;
 import com.fongmi.android.tv.net.Callback;
 import com.fongmi.android.tv.server.Server;
+import com.fongmi.android.tv.ui.base.BaseActivity;
 import com.fongmi.android.tv.ui.custom.CustomRowPresenter;
 import com.fongmi.android.tv.ui.custom.CustomSelector;
 import com.fongmi.android.tv.ui.custom.CustomTitleView;
@@ -280,8 +281,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
 
     @Override
     public void onItemClick(Vod item) {
-        if (item.shouldSearch()) onLongClick(item);
-        else DetailActivity.start(this, item.getVodId(), item.getVodName());
+        DetailActivity.start(this, item.getVodId(), item.getVodName());
     }
 
     @Override
@@ -311,13 +311,17 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
 
     @Override
     public void showDialog() {
-        SiteDialog.create(this).filter(true).show();
+        SiteDialog.create(this).change().show();
     }
 
     @Override
     public void setSite(Site item) {
         ApiConfig.get().setHome(item);
         getVideo();
+    }
+
+    @Override
+    public void onChanged() {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -346,9 +350,6 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         switch (event.getType()) {
             case SEARCH:
                 CollectActivity.start(this, event.getText(), true);
-                break;
-            case UPDATE:
-                Updater.get().force().branch(event.getText()).start();
                 break;
             case PUSH:
                 if (ApiConfig.get().getSite("push_agent") == null) return;

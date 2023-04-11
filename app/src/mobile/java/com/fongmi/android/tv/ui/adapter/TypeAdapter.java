@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.bean.Class;
+import com.fongmi.android.tv.bean.Result;
 import com.fongmi.android.tv.databinding.AdapterTypeBinding;
 import com.fongmi.android.tv.utils.ResUtil;
 
@@ -29,32 +30,22 @@ public class TypeAdapter extends RecyclerView.Adapter<TypeAdapter.ViewHolder> {
         void onItemClick(int position, Class item);
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
-
-        private final AdapterTypeBinding binding;
-
-        ViewHolder(@NonNull AdapterTypeBinding binding) {
-            super(binding.getRoot());
-            this.binding = binding;
-        }
-    }
-
     private Class home() {
         Class type = new Class();
-        type.setTypeName(ResUtil.getString(R.string.home));
+        type.setTypeName(ResUtil.getString(R.string.vod_home));
         type.setTypeId("home");
-        type.setActivated(true);
         return type;
     }
 
     public void clear() {
         mItems.clear();
-        mItems.add(home());
         notifyDataSetChanged();
     }
 
-    public void addAll(List<Class> items) {
-        mItems.addAll(items);
+    public void addAll(Result result) {
+        mItems.addAll(result.getTypes());
+        if (result.getList().size() > 0) mItems.add(0, home());
+        if (mItems.size() > 0) mItems.get(0).setActivated(true);
         notifyDataSetChanged();
     }
 
@@ -88,6 +79,16 @@ public class TypeAdapter extends RecyclerView.Adapter<TypeAdapter.ViewHolder> {
         Class item = mItems.get(position);
         holder.binding.text.setText(item.getTypeName());
         holder.binding.text.setActivated(item.isActivated());
-        holder.binding.getRoot().setOnClickListener(v -> mListener.onItemClick(position, item));
+        holder.binding.text.setOnClickListener(v -> mListener.onItemClick(position, item));
+    }
+
+    static class ViewHolder extends RecyclerView.ViewHolder {
+
+        private final AdapterTypeBinding binding;
+
+        ViewHolder(@NonNull AdapterTypeBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
+        }
     }
 }

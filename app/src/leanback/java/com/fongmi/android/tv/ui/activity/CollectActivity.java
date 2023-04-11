@@ -27,6 +27,7 @@ import com.fongmi.android.tv.bean.Collect;
 import com.fongmi.android.tv.bean.Site;
 import com.fongmi.android.tv.databinding.ActivityCollectBinding;
 import com.fongmi.android.tv.model.SiteViewModel;
+import com.fongmi.android.tv.ui.base.BaseActivity;
 import com.fongmi.android.tv.ui.fragment.CollectFragment;
 import com.fongmi.android.tv.ui.presenter.CollectPresenter;
 import com.fongmi.android.tv.utils.Notify;
@@ -41,9 +42,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class CollectActivity extends BaseActivity {
 
+    private PauseThreadPoolExecutor mExecutor;
     private ActivityCollectBinding mBinding;
     private ArrayObjectAdapter mAdapter;
-    private PausableThreadPoolExecutor mExecutor;
     private SiteViewModel mViewModel;
     private PageAdapter mPageAdapter;
     private List<Site> mSites;
@@ -89,7 +90,6 @@ public class CollectActivity extends BaseActivity {
         mBinding.recycler.addOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() {
             @Override
             public void onChildViewHolderSelected(@NonNull RecyclerView parent, @Nullable RecyclerView.ViewHolder child, int position, int subposition) {
-                mBinding.pager.setCurrentItem(position);
                 onChildSelected(child);
             }
         });
@@ -123,13 +123,10 @@ public class CollectActivity extends BaseActivity {
         mSites.add(0, home);
     }
 
-    @SuppressLint("SetTextI18n")
     private void search() {
         mAdapter.add(Collect.all());
         mPageAdapter.notifyDataSetChanged();
-        int core = Runtime.getRuntime().availableProcessors();
-        int corePoolSize = Math.max(Constant.THREAD_POOL, core);
-        mExecutor = new PausableThreadPoolExecutor(corePoolSize, corePoolSize, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(100));
+        mExecutor = new PauseThreadPoolExecutor(Constant.THREAD_POOL, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
         mBinding.result.setText(getString(R.string.collect_result, getKeyword()));
         mBinding.searchCount.setMax(mSites.size());
         mBinding.searchCount.setProgress(0);
@@ -158,7 +155,15 @@ public class CollectActivity extends BaseActivity {
         if (child == null) return;
         mOldView = child.itemView;
         mOldView.setActivated(true);
+        App.post(mRunnable, 200);
     }
+
+    private final Runnable mRunnable = new Runnable() {
+        @Override
+        public void run() {
+            mBinding.pager.setCurrentItem(mBinding.recycler.getSelectedPosition());
+        }
+    };
 
     private CollectFragment getFragment() {
         return (CollectFragment) mPageAdapter.instantiateItem(mBinding.pager, 0);
@@ -173,24 +178,21 @@ public class CollectActivity extends BaseActivity {
     }
 
     @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        if (mExecutor == null) return;
-        mExecutor.shutdownNow();
+    protected void onResume() {
+        super.onResume();
+        if (mExecutor != null) mExecutor.resume();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (mExecutor == null) return;
-        mExecutor.pause();
+        if (mExecutor != null) mExecutor.pause();
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        if (mExecutor == null) return;
-        mExecutor.resume();
+    public void onBackPressed() {
+        super.onBackPressed();
+        if (mExecutor != null) mExecutor.shutdownNow();
     }
 
     class PageAdapter extends FragmentStatePagerAdapter {
@@ -199,15 +201,15 @@ public class CollectActivity extends BaseActivity {
             super(fm);
         }
 
-        @Override
-        public int getCount() {
-            return mAdapter.size();
-        }
-
         @NonNull
         @Override
         public Fragment getItem(int position) {
             return CollectFragment.newInstance(((Collect) mAdapter.get(position)).getList());
+        }
+
+        @Override
+        public int getCount() {
+            return mAdapter.size();
         }
 
         @Override
