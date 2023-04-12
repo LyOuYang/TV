@@ -45,7 +45,7 @@ public class ApiConfig {
     }
 
     public static ApiConfig get() {
-        return Loader.INSTANCE;
+        return com.fongmi.android.tv.api.ApiConfig.Loader.INSTANCE;
     }
 
     public static int getCid() {
@@ -115,10 +115,10 @@ public class ApiConfig {
     }
 
     public void load(boolean cache, Callback callback) {
-        App.execute(()->{
+        new Thread(() -> {
             if (cache) loadCache(callback);
             else loadConfig(callback);
-        });
+        }).start();
     }
 
     private void loadConfig(Callback callback) {

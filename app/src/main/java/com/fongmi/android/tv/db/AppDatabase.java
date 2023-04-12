@@ -21,7 +21,7 @@ import com.fongmi.android.tv.db.dao.KeepDao;
 import com.fongmi.android.tv.db.dao.SiteDao;
 import com.fongmi.android.tv.db.dao.TrackDao;
 
-@Database(entities = {Keep.class, Site.class, Track.class, Config.class, History.class}, version = AppDatabase.VERSION)
+@Database(entities = {Keep.class, Site.class, Track.class, Config.class, History.class}, version = AppDatabase.VERSION, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     public static final int VERSION = 20;

@@ -74,6 +74,7 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
         mBinding.renderText.setText((render = ResUtil.getStringArray(R.array.select_render))[Prefers.getRender()]);
     }
 
+
     @Override
     protected void initEvent() {
         mBinding.vodHome.setOnClickListener(view -> SiteDialog.create(this).all().show());
@@ -110,7 +111,7 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
 
     private void delayClick(View view) {
         view.setEnabled(false);
-        App.post(() -> view.setEnabled(true),3000);
+        App.post(() -> view.setEnabled(true), 3000);
     }
 
     @Override
@@ -142,44 +143,6 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
         }
     }
 
-    private Callback getCallback(Config config) {
-    private Callback getUrlCallback() {
-        return new Callback() {
-            @Override
-            public void success(Object url) {
-                if (url instanceof String && !TextUtils.isEmpty(((String) url))){
-                    App.post(() -> {
-                        Notify.show("获取成功：url=" + url);
-                        setConfig(Config.find((String) url, 0));
-                    });
-                } else {
-                    Notify.show(R.string.error_empty);
-                }
-            }
-
-            @Override
-            public void error(int resId) {
-                Notify.show(resId);
-            }
-        };
-    }
-
-    private Callback getCallback() {
-        return new Callback() {
-            @Override
-            public void success() {
-                setConfig();
-            }
-
-            @Override
-            public void error(int resId) {
-                Notify.show(resId);
-                config.delete();
-                setConfig();
-            }
-        };
-    }
-
     private void setConfig() {
         switch (type) {
             case 0:
@@ -198,6 +161,43 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
                 mBinding.wallUrl.setText(WallConfig.getDesc());
                 break;
         }
+    }
+
+    private Callback getCallback(Config config) {
+        return new Callback() {
+            @Override
+            public void success() {
+                setConfig();
+            }
+
+            @Override
+            public void error(int resId) {
+                Notify.show(resId);
+                config.delete();
+                setConfig();
+            }
+        };
+    }
+
+    private Callback getUrlCallback() {
+        return new Callback() {
+            @Override
+            public void success(Object url) {
+                if (url instanceof String && !TextUtils.isEmpty(((String) url))) {
+                    App.post(() -> {
+                        Notify.show("获取成功：url=" + url);
+                        setConfig(Config.find((String) url, 0));
+                    });
+                } else {
+                    Notify.show(R.string.error_empty);
+                }
+            }
+
+            @Override
+            public void error(int resId) {
+                Notify.show(resId);
+            }
+        };
     }
 
     @Override
@@ -279,7 +279,9 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode != Activity.RESULT_OK || requestCode != FileChooser.REQUEST_PICK_FILE) return;
+        if (resultCode != Activity.RESULT_OK || requestCode != FileChooser.REQUEST_PICK_FILE)
+            return;
         setConfig(Config.find("file:/" + FileChooser.getPathFromUri(getContext(), data.getData()).replace(FileUtil.getRootPath(), ""), type));
     }
 }
+

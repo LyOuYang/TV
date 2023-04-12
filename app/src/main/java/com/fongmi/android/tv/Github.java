@@ -1,6 +1,7 @@
 package com.fongmi.android.tv;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.fongmi.android.tv.net.OkHttp;
 
@@ -13,7 +14,9 @@ public class Github {
     public static final String A = "https://raw.githubusercontent.com/";
     public static final String B = "https://ghproxy.com/";
     public static final String C = "https://raw.iqiq.io/";
-    public static final String REPO = "FongMi/TV/";
+
+    public static final String G = "https://gitee.com/";
+    public static final String REPO = "oydh/tv/raw/";
     public static final String RELEASE = "release";
     public static final String DEV = "dev";
 
@@ -28,26 +31,32 @@ public class Github {
     }
 
     public Github() {
-        check(A);
-        check(B);
-        check(C);
-    }
-
-    private void check(String url) {
-        try {
-            if (getProxy().length() > 0) return;
-            int code = OkHttp.client(Constant.TIMEOUT_GITHUB).newCall(new Request.Builder().url(url).build()).execute().code();
-            if (code == 200) setProxy(url);
-        } catch (IOException ignored) {
+        if (!check(B)) {
+            check(G);
         }
     }
 
+    private boolean check(String url) {
+        try {
+            if (getProxy().length() > 0) return true;
+            int code = OkHttp.client(Constant.TIMEOUT_GITHUB).newCall(new Request.Builder().url(url).build()).execute().code();
+            if (code == 200) {
+                setProxy(url);
+                return true;
+            }
+        } catch (IOException ignored) {
+            Log.e("check", ignored.getMessage());
+            return false;
+        }
+        return false;
+    }
+
     private void setProxy(String url) {
-        this.proxy = url.equals(B) ? url + A + REPO : url + REPO;
+        this.proxy = url.equals(B) || url.equals(C) ? url + A + REPO : url + REPO;
     }
 
     private String getProxy() {
-        return TextUtils.isEmpty(proxy) ? "" : proxy;
+        return TextUtils.isEmpty(proxy) ? G + REPO : proxy;
     }
 
     public String getReleasePath(String path) {
