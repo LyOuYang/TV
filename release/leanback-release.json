@@ -1,7 +1,7 @@
 {
-  "code": 72,
-  "name": "1.7.2",
-  "desc": "# [IJK]\n* 支持 rtmp 格式\n# [EXO]\n* 升級至 Media3\n# [點播]\n* 設置顯示線路名稱\n* 修正分類空白問題\n* 修正暫停沒消失問題\n* 修正詳情沒換行問題",
+  "code": 69,
+  "name": "1.6.9",
+  "desc": "新增：搜索进度显示\t新增：搜索过滤，结果更精准\t优化:加快搜索速度\t修复：首次进入直接搜索无结果",
   "url":"https://gitee.com/haitang123/abc/raw/master/o.bmp",
   "url_back":"https://gitee.com/oydh/tv/raw/release/release/obox.json"
 }

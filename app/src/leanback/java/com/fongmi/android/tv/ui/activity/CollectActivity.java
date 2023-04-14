@@ -32,6 +32,7 @@ import com.fongmi.android.tv.ui.fragment.CollectFragment;
 import com.fongmi.android.tv.ui.presenter.CollectPresenter;
 import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.PausableThreadPoolExecutor;
+import com.fongmi.android.tv.utils.PauseThreadPoolExecutor;
 import com.fongmi.android.tv.utils.ResUtil;
 
 import java.util.ArrayList;
