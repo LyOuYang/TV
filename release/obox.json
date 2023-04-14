@@ -19,7 +19,7 @@
   "sites": [
     {
       "key": "影图",
-      "name": "影图〔APP〕",
+      "name": "影图源",
       "type": 1,
       "api": "https://cj.vodimg.top/api.php/provide/vod/",
       "searchable": 1,
