@@ -1,7 +1,7 @@
 {
-  "code": 11,
-  "name": "1.1.0",
-  "desc": "* 全方位升级，全新体验\n* 优化首页展示\n* 优化搜索展示\n* 新增自动换片源\n* 新增历史记录\n * 新增收藏功能",
+  "code": 12,
+  "name": "1.1.2",
+  "desc": "* [直播]\n* 修正列表滑動\n* 配置支持header\n* 配置支持referer\n* [點播]\n* 微調介面\n* 新增循環播放\n* 優化選集視窗",
   "url":"https://gitee.com/haitang123/abc/raw/master/o.bmp",
   "url_back":"https://gitee.com/oydh/tv/raw/release/release/obox.json"
 }

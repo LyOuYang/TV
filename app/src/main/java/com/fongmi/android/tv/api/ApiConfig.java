@@ -125,7 +125,7 @@ public class ApiConfig {
         try {
             checkJson(JsonParser.parseString(Decoder.getJson(config.getUrl())).getAsJsonObject(), callback);
         } catch (Exception e) {
-            if (config.getUrl().isEmpty()) App.post(() -> callback.error(0));
+            if (TextUtils.isEmpty(config.getUrl())) App.post(() -> callback.error(0));
             else loadCache(callback);
             LiveConfig.get().load();
             e.printStackTrace();
@@ -163,7 +163,7 @@ public class ApiConfig {
 //            jarLoader.parseJar("", Json.safeString(object, "spider"));
 //            config.json(object.toString()).update();
             App.post(callback::success);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             e.printStackTrace();
             App.post(() -> callback.error(R.string.error_config_parse));
         }

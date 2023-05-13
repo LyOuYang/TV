@@ -14,8 +14,10 @@ import androidx.viewbinding.ViewBinding;
 import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.bean.Hot;
+import com.fongmi.android.tv.bean.Site;
 import com.fongmi.android.tv.bean.Suggest;
 import com.fongmi.android.tv.databinding.ActivitySearchBinding;
+import com.fongmi.android.tv.impl.SiteCallback;
 import com.fongmi.android.tv.net.Callback;
 import com.fongmi.android.tv.net.OkHttp;
 import com.fongmi.android.tv.ui.adapter.RecordAdapter;
@@ -25,6 +27,7 @@ import com.fongmi.android.tv.ui.custom.CustomKeyboard;
 import com.fongmi.android.tv.ui.custom.CustomTextListener;
 import com.fongmi.android.tv.ui.custom.SpaceItemDecoration;
 import com.fongmi.android.tv.ui.custom.dialog.SiteDialog;
+import com.fongmi.android.tv.utils.Prefers;
 import com.fongmi.android.tv.utils.Utils;
 
 import java.io.IOException;
@@ -33,7 +36,7 @@ import java.util.List;
 import okhttp3.Call;
 import okhttp3.Response;
 
-public class SearchActivity extends BaseActivity implements WordAdapter.OnClickListener, RecordAdapter.OnClickListener, CustomKeyboard.Callback {
+public class SearchActivity extends BaseActivity implements WordAdapter.OnClickListener, RecordAdapter.OnClickListener, CustomKeyboard.Callback, SiteCallback {
 
     private ActivitySearchBinding mBinding;
     private RecordAdapter mRecordAdapter;
@@ -71,6 +74,7 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
         mBinding.mic.setListener(this, new CustomTextListener() {
             @Override
             public void onEndOfSpeech() {
+                mBinding.keyword.requestFocus();
                 mBinding.mic.stop();
             }
 
@@ -93,10 +97,12 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
 
     private void getHot() {
         mBinding.hint.setText(R.string.search_hot);
+        mWordAdapter.addAll(Hot.get(Prefers.getHot()));
         OkHttp.newCall("https://api.web.360kan.com/v1/rank?cat=1").enqueue(new Callback() {
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 List<String> items = Hot.get(response.body().string());
+                if (mWordAdapter.getItemCount() > 0) return;
                 App.post(() -> mWordAdapter.addAll(items));
             }
         });
@@ -126,7 +132,6 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
 
     @Override
     public void onSearch() {
-        mBinding.mic.setFocusable(false);
         String keyword = mBinding.keyword.getText().toString().trim();
         mBinding.keyword.setSelection(mBinding.keyword.length());
         Utils.hideKeyboard(mBinding.keyword);
@@ -152,9 +157,16 @@ public class SearchActivity extends BaseActivity implements WordAdapter.OnClickL
     }
 
     @Override
+    public void setSite(Site item) {
+    }
+
+    @Override
+    public void onChanged() {
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         mBinding.keyword.requestFocus();
-        mBinding.mic.setFocusable(true);
     }
 }
