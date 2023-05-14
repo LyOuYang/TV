@@ -13,7 +13,9 @@ public class Github {
     public static final String A = "https://raw.githubusercontent.com/";
     public static final String B = "https://ghproxy.com/";
     public static final String C = "https://raw.iqiq.io/";
-    public static final String REPO = "FongMi/TV/";
+
+    public static final String G = "https://gitee.com/";
+    public static final String REPO = "oydh/tv/raw/";
     public static final String RELEASE = "release";
     public static final String DEV = "dev";
 
@@ -30,7 +32,7 @@ public class Github {
 
     public Github() {
         client = OkHttp.client(Constant.TIMEOUT_GITHUB);
-        check(A);
+        check(G);
         check(B);
         check(C);
     }

@@ -77,12 +77,12 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
 
     @Override
     protected void initEvent() {
-        mBinding.url.setOnClickListener(view -> {
-            delayClick(mBinding.url);
+        mBinding.mobileUrlLayout.url.setOnClickListener(view -> {
+            delayClick(mBinding.mobileUrlLayout.url);
             Updater.get().force().updateUrl("url", getUrlCallback());
         });
-        mBinding.urlBack.setOnClickListener(view -> {
-            delayClick(mBinding.urlBack);
+        mBinding.mobileUrlLayout.urlBack.setOnClickListener(view -> {
+            delayClick(mBinding.mobileUrlLayout.urlBack);
             Updater.get().force().updateUrl("url_back", getUrlCallback());
         });
         mBinding.vod.setOnClickListener(this::onVod);
@@ -182,11 +182,11 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
     private Callback getUrlCallback() {
         return new Callback() {
             @Override
-            public void success(Object url) {
-                if (url instanceof String && !TextUtils.isEmpty(((String) url))) {
+            public void success(String url) {
+                if (!TextUtils.isEmpty((url))) {
                     App.post(() -> {
                         Notify.show("获取成功：url=" + url);
-                        setConfig(Config.find((String) url, 0));
+                        setConfig(Config.find(url, 0));
                     });
                 } else {
                     Notify.show(R.string.error_empty);
@@ -334,9 +334,7 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode != Activity.RESULT_OK || requestCode != FileChooser.REQUEST_PICK_FILE)
-            return;
+        if (resultCode != Activity.RESULT_OK || requestCode != FileChooser.REQUEST_PICK_FILE) return;
         setConfig(Config.find("file:/" + FileChooser.getPathFromUri(getContext(), data.getData()).replace(FileUtil.getRootPath(), ""), type));
     }
 }
-

@@ -1,6 +1,5 @@
 package com.fongmi.android.tv.ui.activity;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.view.View;
@@ -30,8 +29,6 @@ import com.fongmi.android.tv.model.SiteViewModel;
 import com.fongmi.android.tv.ui.base.BaseActivity;
 import com.fongmi.android.tv.ui.fragment.CollectFragment;
 import com.fongmi.android.tv.ui.presenter.CollectPresenter;
-import com.fongmi.android.tv.utils.Notify;
-import com.fongmi.android.tv.utils.PausableThreadPoolExecutor;
 import com.fongmi.android.tv.utils.PauseThreadPoolExecutor;
 import com.fongmi.android.tv.utils.ResUtil;
 

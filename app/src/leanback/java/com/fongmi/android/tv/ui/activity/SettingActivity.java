@@ -3,13 +3,10 @@ package com.fongmi.android.tv.ui.activity;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
-import android.text.TextUtils;
-import android.view.View;
 import android.view.View;
 
 import androidx.viewbinding.ViewBinding;
 
-import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.BuildConfig;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.Updater;
@@ -34,7 +31,9 @@ import com.fongmi.android.tv.utils.FileUtil;
 import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.Prefers;
 import com.fongmi.android.tv.utils.ResUtil;
+import com.fongmi.android.tv.utils.SourceUrlUtil;
 import com.fongmi.android.tv.utils.Utils;
+import com.fongmi.android.tv.utils.ViewUtil;
 import com.permissionx.guolindev.PermissionX;
 
 public class SettingActivity extends BaseActivity implements ConfigCallback, SiteCallback, LiveCallback {
@@ -74,12 +73,13 @@ public class SettingActivity extends BaseActivity implements ConfigCallback, Sit
 
     @Override
     protected void initEvent() {
-        mBinding.url.setOnClickListener(view -> {
-            delayClick(mBinding.url); Updater.get().force().updateUrl("url", getUrlCallback());
+        mBinding.tvUrlLayout.url.setOnClickListener(view -> {
+            ViewUtil.delayClick(mBinding.tvUrlLayout.url);
+            Updater.get().force().updateUrl("url", SourceUrlUtil.getUrlCallback(this));
         });
-        mBinding.urlBack.setOnClickListener(view -> {
-            delayClick(mBinding.urlBack);
-            Updater.get().force().updateUrl("url_back", getUrlCallback());
+        mBinding.tvUrlLayout.urlBack.setOnClickListener(view -> {
+            ViewUtil.delayClick(mBinding.tvUrlLayout.urlBack);
+            Updater.get().force().updateUrl("url_back", SourceUrlUtil.getUrlCallback(this));
         });
         mBinding.vod.setOnClickListener(this::onVod);
         mBinding.live.setOnClickListener(this::onLive);
@@ -99,11 +99,6 @@ public class SettingActivity extends BaseActivity implements ConfigCallback, Sit
         mBinding.render.setOnClickListener(this::setRender);
         mBinding.scale.setOnClickListener(this::setScale);
         mBinding.size.setOnClickListener(this::setSize);
-    }
-
-    private void delayClick(View view) {
-        view.setEnabled(false);
-        App.post(() -> view.setEnabled(true),3000);
     }
 
     @Override
@@ -295,26 +290,4 @@ public class SettingActivity extends BaseActivity implements ConfigCallback, Sit
             }
         });
     }
-
-    private Callback getUrlCallback() {
-        return new Callback() {
-            @Override
-            public void success(Object url) {
-                if (url instanceof String && !TextUtils.isEmpty(((String) url))){
-                    App.post(() -> {
-                        Notify.show("获取成功：url=" + url);
-                        setConfig(Config.find((String) url, 0));
-                    });
-                } else {
-                    Notify.show(R.string.error_empty);
-                }
-            }
-
-            @Override
-            public void error(int resId) {
-                Notify.show(resId);
-            }
-        };
-    }
-
 }
