@@ -83,7 +83,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     @Override
     protected void initView() {
         mBinding.progressLayout.showProgress();
-        Updater.get().start();
+        Updater.get().release().start();
         showInputDialog();
         Server.get().start();
         setRecyclerView();
@@ -405,7 +405,6 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
 
     @Override
     public void onBackPressed() {
-
         if (mHistoryPresenter.isDelete()) {
             setHistoryDelete(false);
         } else if (mBinding.recycler.getSelectedPosition() != 0) {

@@ -68,10 +68,6 @@ public class WallConfig {
         this.drawable = drawable;
     }
 
-    public void load() {
-        load(new Callback());
-    }
-
     public void load(Callback callback) {
         App.execute(() -> loadConfig(callback));
     }

@@ -69,6 +69,7 @@
     <string name="url_refresh">url refresh</string>
     <string name="url">line 1</string>
     <string name="url_back">line 2</string>
+    <string name="setting_cache">Cache</string>
     <string name="setting_version">Version</string>
     <string name="setting_storage">Permission</string>
 
