@@ -1,6 +1,7 @@
 package com.fongmi.android.tv.api;
 
 import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
 
 import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.Product;
@@ -67,10 +68,6 @@ public class WallConfig {
         this.drawable = drawable;
     }
 
-    public void load() {
-        load(new Callback());
-    }
-
     public void load(Callback callback) {
         App.execute(() -> loadConfig(callback));
     }
@@ -97,7 +94,7 @@ public class WallConfig {
     }
 
     public boolean isSame(String url) {
-        return same || config.getUrl().isEmpty() || url.equals(config.getUrl());
+        return same || TextUtils.isEmpty(config.getUrl()) || url.equals(config.getUrl());
     }
 
     public static void refresh(int index) {

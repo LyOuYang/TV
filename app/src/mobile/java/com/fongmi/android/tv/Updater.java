@@ -1,4 +1,4 @@
-package com.fongmi.android.tv.api;
+package com.fongmi.android.tv;
 
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -8,10 +8,6 @@ import android.view.View;
 
 import androidx.appcompat.app.AlertDialog;
 
-import com.fongmi.android.tv.App;
-import com.fongmi.android.tv.BuildConfig;
-import com.fongmi.android.tv.Github;
-import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.databinding.DialogUpdateBinding;
 import com.fongmi.android.tv.net.Callback;
 import com.fongmi.android.tv.net.Download;
@@ -63,6 +59,11 @@ public class Updater implements Download.Callback {
         return this;
     }
 
+    public Updater release() {
+        this.branch = Github.RELEASE;
+        return this;
+    }
+
     public Updater dev() {
         this.branch = Github.DEV;
         return this;
@@ -83,7 +84,7 @@ public class Updater implements Download.Callback {
     }
 
     private boolean need(int code, String name) {
-        return (branch.equals(Github.DEV) ? !name.equals(BuildConfig.VERSION_NAME) : code > BuildConfig.VERSION_CODE) && Prefers.getUpdate();
+        return Prefers.getUpdate() && branch.equals(Github.DEV) ? !name.equals(BuildConfig.VERSION_NAME) && code >= BuildConfig.VERSION_CODE : code > BuildConfig.VERSION_CODE;
     }
 
     private void doInBackground() {

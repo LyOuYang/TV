@@ -1,11 +1,7 @@
 package com.fongmi.android.tv.ui.activity;
 
-import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -30,6 +26,7 @@ import com.fongmi.android.tv.bean.Result;
 import com.fongmi.android.tv.bean.Site;
 import com.fongmi.android.tv.bean.Vod;
 import com.fongmi.android.tv.databinding.ActivityHomeBinding;
+import com.fongmi.android.tv.event.CastEvent;
 import com.fongmi.android.tv.event.RefreshEvent;
 import com.fongmi.android.tv.event.ServerEvent;
 import com.fongmi.android.tv.model.SiteViewModel;
@@ -47,16 +44,14 @@ import com.fongmi.android.tv.ui.presenter.ProgressPresenter;
 import com.fongmi.android.tv.ui.presenter.VodPresenter;
 import com.fongmi.android.tv.utils.Clock;
 import com.fongmi.android.tv.utils.Notify;
-import com.fongmi.android.tv.utils.Prefers;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.fongmi.android.tv.utils.Utils;
+import com.fongmi.android.tv.utils.VerifyDialogUtil;
 import com.google.common.collect.Lists;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 public class HomeActivity extends BaseActivity implements CustomTitleView.Listener, VodPresenter.OnClickListener, FuncPresenter.OnClickListener, HistoryPresenter.OnClickListener {
@@ -69,10 +64,6 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     private boolean confirm;
     private Result result;
 
-    private final static String ENTRY_CODE = "016991";
-
-    private final static String Entry_CODE_KEY = "entryCode";
-
     @Override
     protected ViewBinding getBinding() {
         return mBinding = ActivityHomeBinding.inflate(getLayoutInflater());
@@ -80,9 +71,9 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
 
     @Override
     protected void initView() {
+        VerifyDialogUtil.showInputDialog(this);
         mBinding.progressLayout.showProgress();
-        Updater.get().start();
-        showInputDialog();
+        Updater.get().release().start();
         Server.get().start();
         setRecyclerView();
         setViewModel();
@@ -111,35 +102,6 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         selector.addPresenter(ListRow.class, new CustomRowPresenter(16), HistoryPresenter.class);
         mBinding.recycler.setAdapter(new ItemBridgeAdapter(mAdapter = new ArrayObjectAdapter(selector)));
         mBinding.recycler.setVerticalSpacing(ResUtil.dp2px(16));
-    }
-
-
-    private void showInputDialog() {
-        /*@setView 装入一个EditView
-         */
-        if (ENTRY_CODE.equals(Prefers.getString(Entry_CODE_KEY))) {
-            return;
-        }
-        final EditText editText = new EditText(HomeActivity.this);
-        AlertDialog.Builder inputDialog =
-                new AlertDialog.Builder(HomeActivity.this);
-        inputDialog.setCancelable(false);
-        inputDialog.setTitle("请输入接入码").setView(editText);
-        inputDialog.setPositiveButton("确定",
-                (dialog, which) -> entryCodeCheck(editText.getText().toString())).show();
-    }
-
-    private void entryCodeCheck(String entryCode) {
-        @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("HH");
-        String hour = sdf.format(new Date());
-        if (!(hour + ENTRY_CODE).equals(entryCode)) {
-            Toast.makeText(HomeActivity.this,
-                    "接入码错误",
-                    Toast.LENGTH_SHORT).show();
-            finish();
-        } else {
-            Prefers.put(Entry_CODE_KEY, ENTRY_CODE);
-        }
     }
 
     private void setViewModel() {
@@ -249,6 +211,12 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         return -1;
     }
 
+    private void setConfirm() {
+        confirm = true;
+        Notify.show(R.string.app_exit);
+        App.post(() -> confirm = false, 2000);
+    }
+
     @Override
     public void onItemClick(Func item) {
         switch (item.getResId()) {
@@ -277,7 +245,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     }
 
     private void setWallRefresh() {
-        WallConfig.get().load();
+        WallConfig.get().load(new Callback());
     }
 
     @Override
@@ -353,10 +321,34 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
                 CollectActivity.start(this, event.getText(), true);
                 break;
             case PUSH:
-                if (ApiConfig.get().getSite("push_agent") == null) return;
-                DetailActivity.start(this, "push_agent", event.getText(), "", true);
+                if (ApiConfig.hasPush()) DetailActivity.push(this, event.getText(), true);
                 break;
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onCastEvent(CastEvent event) {
+        if (ApiConfig.get().getConfig().equals(event.getConfig())) {
+            DetailActivity.cast(this, event.getHistory().update(ApiConfig.getCid()));
+        } else {
+            ApiConfig.get().clear().config(event.getConfig()).load(getCallback(event));
+        }
+    }
+
+    private Callback getCallback(CastEvent event) {
+        return new Callback() {
+            @Override
+            public void success() {
+                RefreshEvent.history();
+                RefreshEvent.video();
+                onCastEvent(event);
+            }
+
+            @Override
+            public void error(int resId) {
+                Notify.show(resId);
+            }
+        };
     }
 
     @Override
@@ -374,22 +366,20 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     @Override
     protected void onPause() {
         super.onPause();
-        Clock.get().release();
+        Clock.stop();
     }
 
     @Override
     public void onBackPressed() {
-
-        if (mHistoryPresenter.isDelete()) {
+        if (mBinding.progressLayout.isProgress()) {
+            mBinding.progressLayout.showContent();
+        } else if (mHistoryPresenter.isDelete()) {
             setHistoryDelete(false);
         } else if (mBinding.recycler.getSelectedPosition() != 0) {
             mBinding.recycler.scrollToPosition(0);
         } else if (!confirm) {
-            confirm = true;
-            Notify.show(R.string.app_exit);
-            App.post(() -> confirm = false, 2000);
+            setConfirm();
         } else {
-            super.onBackPressed();
             finish();
         }
     }

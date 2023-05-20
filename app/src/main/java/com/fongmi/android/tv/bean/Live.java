@@ -9,6 +9,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.File;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,6 +33,10 @@ public class Live {
     private String epg;
     @SerializedName("ua")
     private String ua;
+    @SerializedName("referer")
+    private String referer;
+    @SerializedName("header")
+    private JsonElement header;
     @SerializedName("playerType")
     private Integer playerType;
     @SerializedName("channels")
@@ -57,7 +62,7 @@ public class Live {
     }
 
     public Live(String url) {
-        this.name = Uri.parse(url).getLastPathSegment();
+        this.name = url.startsWith("file") ? new File(url).getName() : Uri.parse(url).getLastPathSegment();
         this.url = url;
     }
 
@@ -96,6 +101,14 @@ public class Live {
 
     public String getUa() {
         return TextUtils.isEmpty(ua) ? "" : ua;
+    }
+
+    public String getReferer() {
+        return TextUtils.isEmpty(referer) ? "" : referer;
+    }
+
+    public JsonElement getHeader() {
+        return header;
     }
 
     public int getPlayerType() {

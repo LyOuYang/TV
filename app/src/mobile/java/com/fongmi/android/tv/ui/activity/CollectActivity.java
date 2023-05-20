@@ -21,6 +21,7 @@ import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.api.ApiConfig;
 import com.fongmi.android.tv.bean.Collect;
 import com.fongmi.android.tv.bean.Hot;
+import com.fongmi.android.tv.bean.Result;
 import com.fongmi.android.tv.bean.Site;
 import com.fongmi.android.tv.bean.Suggest;
 import com.fongmi.android.tv.bean.Vod;
@@ -34,8 +35,8 @@ import com.fongmi.android.tv.ui.adapter.RecordAdapter;
 import com.fongmi.android.tv.ui.adapter.VodAdapter;
 import com.fongmi.android.tv.ui.adapter.WordAdapter;
 import com.fongmi.android.tv.ui.base.BaseActivity;
+import com.fongmi.android.tv.ui.base.ViewType;
 import com.fongmi.android.tv.ui.custom.CustomTextListener;
-import com.fongmi.android.tv.ui.custom.ViewType;
 import com.fongmi.android.tv.ui.custom.dialog.SiteDialog;
 import com.fongmi.android.tv.utils.PauseThreadPoolExecutor;
 import com.fongmi.android.tv.utils.Prefers;
@@ -91,8 +92,8 @@ public class CollectActivity extends BaseActivity implements SiteCallback, WordA
         setRecyclerView();
         setLayoutSize();
         setViewModel();
+        checkKeyword();
         setViewType();
-        setKeyword();
         setSite();
         getHot();
         search();
@@ -100,8 +101,8 @@ public class CollectActivity extends BaseActivity implements SiteCallback, WordA
 
     @Override
     protected void initEvent() {
+        mBinding.site.setOnClickListener(this::onSite);
         mBinding.view.setOnClickListener(this::toggleView);
-        mBinding.site.setOnClickListener(v -> SiteDialog.create(this).search().show());
         mBinding.keyword.setOnEditorActionListener((textView, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE) search();
             return true;
@@ -132,7 +133,7 @@ public class CollectActivity extends BaseActivity implements SiteCallback, WordA
         mVodAdapter.setViewType(Prefers.getViewType());
         boolean grid = mVodAdapter.getViewType() == ViewType.GRID;
         GridLayoutManager manager = (GridLayoutManager) mBinding.recycler.getLayoutManager();
-        mBinding.view.setImageResource(grid ? R.drawable.ic_view_list : R.drawable.ic_view_grid);
+        mBinding.view.setImageResource(grid ? R.drawable.ic_action_list : R.drawable.ic_action_grid);
         manager.setSpanCount(grid ? 2 : 1);
     }
 
@@ -151,9 +152,14 @@ public class CollectActivity extends BaseActivity implements SiteCallback, WordA
         });
     }
 
-    private void setKeyword() {
+    private void checkKeyword() {
         if (TextUtils.isEmpty(getKeyword())) mBinding.keyword.requestFocus();
-        else mBinding.keyword.setText(getKeyword());
+        else setKeyword(getKeyword());
+    }
+
+    private void setKeyword(String text) {
+        mBinding.keyword.setText(text);
+        mBinding.keyword.setSelection(text.length());
     }
 
     private void setSite() {
@@ -174,7 +180,7 @@ public class CollectActivity extends BaseActivity implements SiteCallback, WordA
         mBinding.view.setVisibility(View.VISIBLE);
         mBinding.result.setVisibility(View.VISIBLE);
         if (mExecutor != null) mExecutor.shutdownNow();
-        mExecutor = new PauseThreadPoolExecutor(Constant.THREAD_POOL, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
+        mExecutor = new PauseThreadPoolExecutor(Constant.THREAD_POOL * 2, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
         String keyword = mBinding.keyword.getText().toString().trim();
         for (Site site : mSites) mExecutor.execute(() -> search(site, keyword));
         App.post(() -> mRecordAdapter.add(keyword), 250);
@@ -201,6 +207,11 @@ public class CollectActivity extends BaseActivity implements SiteCallback, WordA
                 App.post(() -> mWordAdapter.addAll(items));
             }
         });
+    }
+
+    private void onSite(View view) {
+        Utils.hideKeyboard(mBinding.keyword);
+        App.post(() -> SiteDialog.create(this).search().show(), 50);
     }
 
     private void toggleView(View view) {
@@ -231,8 +242,7 @@ public class CollectActivity extends BaseActivity implements SiteCallback, WordA
 
     @Override
     public void onItemClick(String text) {
-        mBinding.keyword.setText(text);
-        mBinding.keyword.setSelection(text.length());
+        setKeyword(text);
         search();
     }
 
@@ -252,7 +262,8 @@ public class CollectActivity extends BaseActivity implements SiteCallback, WordA
 
     @Override
     public void onItemClick(Vod item) {
-        DetailActivity.start(this, item.getSiteKey(), item.getVodId(), item.getVodName());
+        if (item.isFolder()) VodActivity.start(this, item.getSiteKey(), Result.folder(item));
+        else DetailActivity.start(this, item.getSiteKey(), item.getVodId(), item.getVodName());
     }
 
     @Override

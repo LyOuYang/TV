@@ -5,7 +5,6 @@ import androidx.media3.common.PlaybackException;
 import androidx.media3.common.Player;
 import androidx.media3.common.TrackSelectionOverride;
 import androidx.media3.common.util.Util;
-import androidx.media3.exoplayer.DefaultLoadControl;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.exoplayer.analytics.AnalyticsListener;
 import androidx.media3.ui.PlayerView;
@@ -34,7 +33,7 @@ import java.util.Map;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
 import tv.danmaku.ijk.media.player.ui.IjkVideoView;
 
-public class Players implements Player.Listener, IMediaPlayer.OnInfoListener, IMediaPlayer.OnErrorListener, IMediaPlayer.OnPreparedListener, IMediaPlayer.OnCompletionListener, AnalyticsListener, ParseCallback {
+public class Players implements Player.Listener, IMediaPlayer.Listener, AnalyticsListener, ParseCallback {
 
     private IjkVideoView ijkPlayer;
     private StringBuilder builder;
@@ -74,7 +73,7 @@ public class Players implements Player.Listener, IMediaPlayer.OnInfoListener, IM
     }
 
     private void setupExo(PlayerView view) {
-        exoPlayer = new ExoPlayer.Builder(App.get()).setLoadControl(new DefaultLoadControl()).setRenderersFactory(ExoUtil.buildRenderersFactory()).setTrackSelector(ExoUtil.buildTrackSelector()).build();
+        exoPlayer = new ExoPlayer.Builder(App.get()).setLoadControl(ExoUtil.buildLoadControl()).setRenderersFactory(ExoUtil.buildRenderersFactory()).setTrackSelector(ExoUtil.buildTrackSelector()).build();
         exoPlayer.addAnalyticsListener(this);
         exoPlayer.setPlayWhenReady(true);
         exoPlayer.addListener(this);
@@ -82,12 +81,9 @@ public class Players implements Player.Listener, IMediaPlayer.OnInfoListener, IM
     }
 
     private void setupIjk(IjkVideoView view) {
-        ijkPlayer = view;
-        ijkPlayer.setDecode(decode);
-        ijkPlayer.setOnInfoListener(this);
-        ijkPlayer.setOnErrorListener(this);
-        ijkPlayer.setOnPreparedListener(this);
-        ijkPlayer.setOnCompletionListener(this);
+        ijkPlayer = view.render(Prefers.getRender()).decode(decode);
+        ijkPlayer.addListener(this);
+        ijkPlayer.build();
     }
 
     public ExoPlayer exo() {
@@ -311,7 +307,7 @@ public class Players implements Player.Listener, IMediaPlayer.OnInfoListener, IM
     }
 
     private void stopIjk() {
-        ijkPlayer.release();
+        ijkPlayer.stop();
     }
 
     private void releaseExo() {
@@ -332,11 +328,11 @@ public class Players implements Player.Listener, IMediaPlayer.OnInfoListener, IM
     }
 
     private void setMediaSource(Result result) {
-        SpiderDebug.log(errorCode + "," + result.getUrl() + "," + result.getHeaders());
-        if (isIjk()) ijkPlayer.setMediaSource(result.getPlayUrl() + result.getUrl(), result.getHeaders());
+        SpiderDebug.log(errorCode + "," + result.getRealUrl() + "," + result.getHeaders());
+        if (isIjk()) ijkPlayer.setMediaSource(result.getRealUrl(), result.getHeaders());
         if (isExo()) exoPlayer.setMediaSource(ExoUtil.getSource(result, errorCode));
         if (isExo()) exoPlayer.prepare();
-        setTimeoutCheck();
+        setTimeoutCheck(result.getRealUrl());
     }
 
     private void setMediaSource(Map<String, String> headers, String url) {
@@ -344,12 +340,12 @@ public class Players implements Player.Listener, IMediaPlayer.OnInfoListener, IM
         if (isIjk()) ijkPlayer.setMediaSource(url, headers);
         if (isExo()) exoPlayer.setMediaSource(ExoUtil.getSource(headers, url, errorCode));
         if (isExo()) exoPlayer.prepare();
-        setTimeoutCheck();
+        setTimeoutCheck(url);
     }
 
-    private void setTimeoutCheck() {
+    private void setTimeoutCheck(String url) {
         App.post(runnable, timeout);
-        PlayerEvent.state(0);
+        PlayerEvent.url(url);
     }
 
     private void removeTimeoutCheck() {
@@ -409,18 +405,16 @@ public class Players implements Player.Listener, IMediaPlayer.OnInfoListener, IM
     }
 
     @Override
-    public boolean onInfo(IMediaPlayer mp, int what, int extra) {
+    public void onInfo(IMediaPlayer mp, int what, int extra) {
         switch (what) {
             case IMediaPlayer.MEDIA_INFO_BUFFERING_START:
                 PlayerEvent.state(Player.STATE_BUFFERING);
-                return true;
+                break;
             case IMediaPlayer.MEDIA_INFO_BUFFERING_END:
             case IMediaPlayer.MEDIA_INFO_VIDEO_SEEK_RENDERING_START:
             case IMediaPlayer.MEDIA_INFO_AUDIO_SEEK_RENDERING_START:
                 PlayerEvent.ready();
-                return true;
-            default:
-                return true;
+                break;
         }
     }
 

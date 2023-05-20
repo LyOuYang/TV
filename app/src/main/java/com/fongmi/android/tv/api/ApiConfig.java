@@ -4,6 +4,7 @@ import android.text.TextUtils;
 
 import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.R;
+import com.fongmi.android.tv.bean.Rule;
 import com.fongmi.android.tv.bean.Config;
 import com.fongmi.android.tv.bean.Depot;
 import com.fongmi.android.tv.bean.Parse;
@@ -31,6 +32,7 @@ public class ApiConfig {
     private List<Site> sites;
     private List<Parse> parses;
     private List<String> flags;
+    private List<Rule> rules;
     private JarLoader jarLoader;
     private PyLoader pyLoader;
     private JsLoader jsLoader;
@@ -45,7 +47,7 @@ public class ApiConfig {
     }
 
     public static ApiConfig get() {
-        return com.fongmi.android.tv.api.ApiConfig.Loader.INSTANCE;
+        return Loader.INSTANCE;
     }
 
     public static int getCid() {
@@ -84,6 +86,7 @@ public class ApiConfig {
         this.config = Config.vod();
         this.sites = new ArrayList<>();
         this.flags = new ArrayList<>();
+        this.rules = new ArrayList<>();
         this.parses = new ArrayList<>();
         this.jarLoader = new JarLoader();
         this.pyLoader = new PyLoader();
@@ -103,6 +106,7 @@ public class ApiConfig {
         this.parse = null;
         this.sites.clear();
         this.flags.clear();
+        this.rules.clear();
         this.parses.clear();
         this.jarLoader.clear();
         this.pyLoader.clear();
@@ -125,7 +129,7 @@ public class ApiConfig {
         try {
             checkJson(JsonParser.parseString(Decoder.getJson(config.getUrl())).getAsJsonObject(), callback);
         } catch (Exception e) {
-            if (config.getUrl().isEmpty()) App.post(() -> callback.error(0));
+            if (TextUtils.isEmpty(config.getUrl())) App.post(() -> callback.error(0));
             else loadCache(callback);
             LiveConfig.get().load();
             e.printStackTrace();
@@ -163,7 +167,7 @@ public class ApiConfig {
 //            jarLoader.parseJar("", Json.safeString(object, "spider"));
 //            config.json(object.toString()).update();
             App.post(callback::success);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             e.printStackTrace();
             App.post(() -> callback.error(R.string.error_config_parse));
         }
@@ -197,6 +201,7 @@ public class ApiConfig {
         if (parses.size() > 0) parses.add(0, Parse.god());
         if (home == null) setHome(sites.isEmpty() ? new Site() : sites.get(0));
         if (parse == null) setParse(parses.isEmpty() ? new Parse() : parses.get(0));
+        setRules(Rule.arrayFrom(object.getAsJsonArray("rules")));
         setFlags(Json.safeListString(object, "flags"));
         setWall(Json.safeString(object, "wallpaper"));
         setAds(Json.safeListString(object, "ads"));
@@ -283,6 +288,14 @@ public class ApiConfig {
 
     private void setFlags(List<String> flags) {
         this.flags.addAll(flags);
+    }
+
+    public List<Rule> getRules() {
+        return rules == null ? Collections.emptyList() : rules;
+    }
+
+    public void setRules(List<Rule> rules) {
+        this.rules = rules;
     }
 
     public String getAds() {

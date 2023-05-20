@@ -15,7 +15,7 @@ import com.fongmi.android.tv.api.WallConfig;
 import com.fongmi.android.tv.bean.Config;
 import com.fongmi.android.tv.databinding.DialogConfigBinding;
 import com.fongmi.android.tv.impl.ConfigCallback;
-import com.fongmi.android.tv.ui.custom.FileChooser;
+import com.fongmi.android.tv.utils.FileChooser;
 import com.fongmi.android.tv.utils.Utils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -57,7 +57,6 @@ public class ConfigDialog {
 
     private void initView() {
         binding.text.setText(url = getUrl());
-        binding.text.setSelection(url.length());
         binding.input.setEndIconOnClickListener(this::onChoose);
     }
 

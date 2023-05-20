@@ -18,6 +18,8 @@ import com.fongmi.android.tv.event.RefreshEvent;
 import com.fongmi.android.tv.net.Callback;
 import com.fongmi.android.tv.ui.adapter.KeepAdapter;
 import com.fongmi.android.tv.ui.base.BaseActivity;
+import com.fongmi.android.tv.ui.custom.dialog.SyncDialog;
+import com.fongmi.android.tv.utils.Notify;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -45,6 +47,7 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
 
     @Override
     protected void initEvent() {
+        mBinding.sync.setOnClickListener(this::onSync);
         mBinding.delete.setOnClickListener(this::onDelete);
     }
 
@@ -59,6 +62,10 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
     private void getKeep() {
         mAdapter.addAll(Keep.getVod());
         mBinding.delete.setVisibility(mAdapter.getItemCount() > 0 ? View.VISIBLE : View.GONE);
+    }
+
+    private void onSync(View view) {
+        SyncDialog.create().keep().show(this);
     }
 
     private void onDelete(View view) {
@@ -76,12 +83,13 @@ public class KeepActivity extends BaseActivity implements KeepAdapter.OnClickLis
             @Override
             public void success() {
                 DetailActivity.start(getActivity(), item.getSiteKey(), item.getVodId(), item.getVodName());
+                RefreshEvent.config();
                 RefreshEvent.video();
             }
 
             @Override
             public void error(int resId) {
-                CollectActivity.start(getActivity(), item.getVodName());
+                Notify.show(resId);
             }
         });
     }

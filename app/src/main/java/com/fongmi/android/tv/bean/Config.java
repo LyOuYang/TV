@@ -7,39 +7,51 @@ import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 import com.fongmi.android.tv.db.AppDatabase;
+import com.google.gson.Gson;
+import com.google.gson.annotations.SerializedName;
+import com.google.gson.reflect.TypeToken;
 
+import java.lang.reflect.Type;
+import java.util.Collections;
 import java.util.List;
 
 @Entity(indices = @Index(value = {"url", "type"}, unique = true))
 public class Config {
 
     @PrimaryKey(autoGenerate = true)
+    @SerializedName("id")
     private int id;
+    @SerializedName("type")
     private int type;
+    @SerializedName("time")
     private long time;
+    @SerializedName("url")
     private String url;
+    @SerializedName("json")
     private String json;
+    @SerializedName("name")
     private String name;
+    @SerializedName("home")
     private String home;
+    @SerializedName("parse")
     private String parse;
 
+    public static List<Config> arrayFrom(String str) {
+        Type listType = new TypeToken<List<Config>>() {}.getType();
+        List<Config> items = new Gson().fromJson(str, listType);
+        return items == null ? Collections.emptyList() : items;
+    }
+
     public static Config create(int type) {
-        return create("", type);
+        return new Config().type(type);
     }
 
-    public static Config create(String url, int type) {
-        return new Config(url, "", type);
+    public static Config create(int type, String url) {
+        return new Config().type(type).url(url).insert();
     }
 
-    public static Config create(String url, String name, int type) {
-        return new Config(url, name, type);
-    }
-
-    public Config(String url, String name, int type) {
-        this.url = url;
-        this.name = name;
-        this.type = type;
-        this.id = (int) insert();
+    public static Config create(int type, String url, String name) {
+        return new Config().type(type).url(url).name(name).insert();
     }
 
     public int getId() {
@@ -111,6 +123,11 @@ public class Config {
         return this;
     }
 
+    public Config url(String url) {
+        setUrl(url);
+        return this;
+    }
+
     public Config name(String name) {
         setName(name);
         return this;
@@ -139,6 +156,10 @@ public class Config {
 
     public static List<Config> getAll(int type) {
         return AppDatabase.get().getConfigDao().findByType(type);
+    }
+
+    public static List<Config> findUrls() {
+        return AppDatabase.get().getConfigDao().findUrlByType(0);
     }
 
     public static void delete(String url) {
@@ -170,26 +191,27 @@ public class Config {
 
     public static Config find(String url, int type) {
         Config item = AppDatabase.get().getConfigDao().find(url, type);
-        return item == null ? create(url, type) : item.type(type);
+        return item == null ? create(type, url) : item.type(type);
     }
 
     public static Config find(String url, String name, int type) {
         Config item = AppDatabase.get().getConfigDao().find(url, type);
-        return item == null ? create(url, name, type) : item.type(type).name(name);
+        return item == null ? create(type, url, name) : item.type(type).name(name);
     }
 
     public static Config find(Config config, int type) {
         Config item = AppDatabase.get().getConfigDao().find(config.getUrl(), type);
-        return item == null ? create(config.getUrl(), config.getName(), type) : item.type(type).name(config.getName());
+        return item == null ? create(type, config.getUrl(), config.getName()) : item.type(type).name(config.getName());
     }
 
     public static Config find(Depot depot, int type) {
         Config item = AppDatabase.get().getConfigDao().find(depot.getUrl(), type);
-        return item == null ? create(depot.getUrl(), depot.getName(), type) : item.type(type).name(depot.getName());
+        return item == null ? create(type, depot.getUrl(), depot.getName()) : item.type(type).name(depot.getName());
     }
 
-    public long insert() {
-        return getUrl().isEmpty() ? -1 : AppDatabase.get().getConfigDao().insert(this);
+    public Config insert() {
+        setId(Math.toIntExact(AppDatabase.get().getConfigDao().insert(this)));
+        return this;
     }
 
     public Config update() {

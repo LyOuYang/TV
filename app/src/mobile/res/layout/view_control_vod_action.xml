@@ -34,6 +34,17 @@
             style="@style/Control.Action"
             tools:text="縮放" />
 
+        <TextView
+            android:id="@+id/loop"
+            style="@style/Control.Action"
+            android:text="@string/play_loop"
+            android:textColor="@color/text" />
+
+        <TextView
+            android:id="@+id/episodes"
+            style="@style/Control.Action"
+            android:text="@string/detail_episode" />
+
         <View
             android:layout_width="0dp"
             android:layout_height="0dp"

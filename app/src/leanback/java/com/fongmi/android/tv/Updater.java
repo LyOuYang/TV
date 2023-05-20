@@ -58,6 +58,11 @@ public class Updater implements Download.Callback {
         return this;
     }
 
+    public Updater release() {
+        this.branch = Github.RELEASE;
+        return this;
+    }
+
     public Updater dev() {
         this.branch = Github.DEV;
         return this;
@@ -78,7 +83,7 @@ public class Updater implements Download.Callback {
     }
 
     private boolean need(int code, String name) {
-        return (branch.equals(Github.DEV) ? !name.equals(BuildConfig.VERSION_NAME) : code > BuildConfig.VERSION_CODE) && Prefers.getUpdate();
+        return Prefers.getUpdate() && branch.equals(Github.DEV) ? !name.equals(BuildConfig.VERSION_NAME) && code >= BuildConfig.VERSION_CODE : code > BuildConfig.VERSION_CODE;
     }
 
     private void doInBackground() {

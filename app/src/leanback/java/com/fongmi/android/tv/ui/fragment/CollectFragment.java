@@ -11,6 +11,7 @@ import androidx.leanback.widget.ItemBridgeAdapter;
 import androidx.leanback.widget.ListRow;
 import androidx.viewbinding.ViewBinding;
 
+import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.Product;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.bean.Result;
@@ -24,7 +25,6 @@ import com.fongmi.android.tv.ui.custom.CustomSelector;
 import com.fongmi.android.tv.ui.presenter.VodPresenter;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.google.common.collect.Lists;
-import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +37,7 @@ public class CollectFragment extends BaseFragment implements VodPresenter.OnClic
     private String json;
 
     public static CollectFragment newInstance(List<Vod> items) {
-        return new CollectFragment().setJson(new Gson().toJson(items));
+        return new CollectFragment().setJson(App.gson().toJson(items));
     }
 
     private CollectFragment setJson(String json) {
@@ -55,7 +55,7 @@ public class CollectFragment extends BaseFragment implements VodPresenter.OnClic
         CustomSelector selector = new CustomSelector();
         selector.addPresenter(ListRow.class, new CustomRowPresenter(16), VodPresenter.class);
         mBinding.recycler.setAdapter(new ItemBridgeAdapter(mAdapter = new ArrayObjectAdapter(selector)));
-        mBinding.recycler.setHeader(getActivity().findViewById(R.id.result_layout), getActivity().findViewById(R.id.recycler));
+        mBinding.recycler.setHeader(getActivity().findViewById(R.id.result), getActivity().findViewById(R.id.recycler));
         mBinding.recycler.setVerticalSpacing(ResUtil.dp2px(16));
     }
 
@@ -88,10 +88,8 @@ public class CollectFragment extends BaseFragment implements VodPresenter.OnClic
     @Override
     public void onItemClick(Vod item) {
         getActivity().setResult(Activity.RESULT_OK);
-        if (item.isFolder())
-            VodActivity.start(getActivity(), item.getSiteKey(), Result.folder(item));
-        else
-            DetailActivity.start(getActivity(), item.getSiteKey(), item.getVodId(), item.getVodName());
+        if (item.isFolder()) VodActivity.start(getActivity(), item.getSiteKey(), Result.folder(item));
+        else DetailActivity.start(getActivity(), item.getSiteKey(), item.getVodId(), item.getVodName());
     }
 
     @Override

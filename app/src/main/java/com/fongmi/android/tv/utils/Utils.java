@@ -26,8 +26,6 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.Map;
 
 public class Utils {
 
@@ -85,17 +83,6 @@ public class Utils {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && App.get().getPackageManager().hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE);
     }
 
-    public static boolean isVideoFormat(String url) {
-        return isVideoFormat(url, new HashMap<>());
-    }
-
-    public static boolean isVideoFormat(String url, Map<String, String> headers) {
-        if (Sniffer.CUSTOM.matcher(url).find()) return true;
-        if (headers.containsKey("Accept") && headers.get("Accept").startsWith("image")) return false;
-        if (url.contains("url=http") || url.contains("v=http") || url.contains(".js") || url.contains(".css") || url.contains(".html")) return false;
-        return Sniffer.RULE.matcher(url).find();
-    }
-
     public static boolean isAutoRotate() {
         return Settings.System.getInt(App.get().getContentResolver(), Settings.System.ACCELEROMETER_ROTATION, 0) == 1;
     }
@@ -144,8 +131,14 @@ public class Utils {
         }
     }
 
-    public static String getUUID() {
+    public static String getDeviceId() {
         return Settings.Secure.getString(App.get().getContentResolver(), Settings.Secure.ANDROID_ID);
+    }
+
+    public static String getDeviceName() {
+        String model = Build.MODEL;
+        String manufacturer = Build.MANUFACTURER;
+        return model.startsWith(manufacturer) ? model : manufacturer + " " + model;
     }
 
     public static String getBase64(String ext) {

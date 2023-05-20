@@ -1,13 +1,23 @@
 package com.fongmi.android.tv.bean;
 
+import android.text.TextUtils;
+import android.view.View;
+
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.api.ApiConfig;
 import com.fongmi.android.tv.db.AppDatabase;
+import com.fongmi.android.tv.event.RefreshEvent;
+import com.google.gson.Gson;
+import com.google.gson.annotations.SerializedName;
+import com.google.gson.reflect.TypeToken;
 
+import java.lang.reflect.Type;
+import java.util.Collections;
 import java.util.List;
 
 @Entity
@@ -15,23 +25,50 @@ public class History {
 
     @NonNull
     @PrimaryKey
+    @SerializedName("key")
     private String key;
+    @SerializedName("vodPic")
     private String vodPic;
+    @SerializedName("vodName")
     private String vodName;
+    @SerializedName("vodFlag")
     private String vodFlag;
+    @SerializedName("vodRemarks")
     private String vodRemarks;
+    @SerializedName("episodeUrl")
     private String episodeUrl;
+    @SerializedName("revSort")
     private boolean revSort;
+    @SerializedName("revPlay")
     private boolean revPlay;
+    @SerializedName("createTime")
     private long createTime;
+    @SerializedName("opening")
     private long opening;
+    @SerializedName("ending")
     private long ending;
+    @SerializedName("position")
     private long position;
+    @SerializedName("duration")
     private long duration;
+    @SerializedName("speed")
     private float speed;
+    @SerializedName("player")
     private int player;
+    @SerializedName("scale")
     private int scale;
+    @SerializedName("cid")
     private int cid;
+
+    public static History objectFrom(String str) {
+        return new Gson().fromJson(str, History.class);
+    }
+
+    public static List<History> arrayFrom(String str) {
+        Type listType = new TypeToken<List<History>>() {}.getType();
+        List<History> items = new Gson().fromJson(str, listType);
+        return items == null ? Collections.emptyList() : items;
+    }
 
     public History() {
         this.speed = 1;
@@ -176,12 +213,16 @@ public class History {
         this.cid = cid;
     }
 
+    public String getSiteName() {
+        return ApiConfig.getSiteName(getSiteKey());
+    }
+
     public String getSiteKey() {
-        return getKey().substring(0, getKey().lastIndexOf(AppDatabase.SYMBOL));
+        return getKey().split(AppDatabase.SYMBOL)[0];
     }
 
     public String getVodId() {
-        return getKey().substring(getKey().lastIndexOf(AppDatabase.SYMBOL) + AppDatabase.SYMBOL.length());
+        return getKey().split(AppDatabase.SYMBOL)[1];
     }
 
     public Vod.Flag getFlag() {
@@ -190,6 +231,10 @@ public class History {
 
     public Vod.Flag.Episode getEpisode() {
         return new Vod.Flag.Episode(getVodRemarks(), getEpisodeUrl());
+    }
+
+    public int getSiteVisible() {
+        return TextUtils.isEmpty(getSiteName()) ? View.GONE : View.VISIBLE;
     }
 
     public int getRevPlayText() {
@@ -201,7 +246,11 @@ public class History {
     }
 
     public static List<History> get() {
-        return AppDatabase.get().getHistoryDao().find(ApiConfig.getCid());
+        return get(ApiConfig.getCid());
+    }
+
+    public static List<History> get(int cid) {
+        return AppDatabase.get().getHistoryDao().find(cid);
     }
 
     public static History find(String key) {
@@ -228,8 +277,19 @@ public class History {
     public void update(long position, long duration) {
         setPosition(position);
         setDuration(duration);
+        update();
+    }
+
+    public History update(int cid) {
+        setCid(cid);
+        update();
+        return this;
+    }
+
+    public History update() {
         checkMerge(AppDatabase.get().getHistoryDao().findByName(ApiConfig.getCid(), getVodName()));
         AppDatabase.get().getHistoryDao().insertOrUpdate(this);
+        return this;
     }
 
     public History delete() {
@@ -252,5 +312,34 @@ public class History {
                 break;
             }
         }
+    }
+
+    private static void startSync(List<History> targets) {
+        for (History target : targets) {
+            List<History> items = AppDatabase.get().getHistoryDao().findByName(ApiConfig.getCid(), target.getVodName());
+            if (items.isEmpty()) {
+                target.update(ApiConfig.getCid());
+                continue;
+            }
+            for (History item : items) {
+                if (target.getCreateTime() > item.getCreateTime()) {
+                    target.update(ApiConfig.getCid());
+                    break;
+                }
+            }
+        }
+    }
+
+    public static void sync(List<History> targets) {
+        App.execute(() -> {
+            startSync(targets);
+            RefreshEvent.history();
+        });
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return new Gson().toJson(this);
     }
 }
