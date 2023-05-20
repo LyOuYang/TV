@@ -55,7 +55,7 @@ public class CollectFragment extends BaseFragment implements VodPresenter.OnClic
         CustomSelector selector = new CustomSelector();
         selector.addPresenter(ListRow.class, new CustomRowPresenter(16), VodPresenter.class);
         mBinding.recycler.setAdapter(new ItemBridgeAdapter(mAdapter = new ArrayObjectAdapter(selector)));
-        mBinding.recycler.setHeader(getActivity().findViewById(R.id.result_layout), getActivity().findViewById(R.id.recycler));
+        mBinding.recycler.setHeader(getActivity().findViewById(R.id.result), getActivity().findViewById(R.id.recycler));
         mBinding.recycler.setVerticalSpacing(ResUtil.dp2px(16));
     }
 
@@ -88,10 +88,8 @@ public class CollectFragment extends BaseFragment implements VodPresenter.OnClic
     @Override
     public void onItemClick(Vod item) {
         getActivity().setResult(Activity.RESULT_OK);
-        if (item.isFolder())
-            VodActivity.start(getActivity(), item.getSiteKey(), Result.folder(item));
-        else
-            DetailActivity.start(getActivity(), item.getSiteKey(), item.getVodId(), item.getVodName());
+        if (item.isFolder()) VodActivity.start(getActivity(), item.getSiteKey(), Result.folder(item));
+        else DetailActivity.start(getActivity(), item.getSiteKey(), item.getVodId(), item.getVodName());
     }
 
     @Override

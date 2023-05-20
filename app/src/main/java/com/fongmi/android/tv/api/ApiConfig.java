@@ -47,7 +47,7 @@ public class ApiConfig {
     }
 
     public static ApiConfig get() {
-        return com.fongmi.android.tv.api.ApiConfig.Loader.INSTANCE;
+        return Loader.INSTANCE;
     }
 
     public static int getCid() {

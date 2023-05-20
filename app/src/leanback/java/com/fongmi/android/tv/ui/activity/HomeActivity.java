@@ -1,11 +1,7 @@
 package com.fongmi.android.tv.ui.activity;
 
-import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -48,7 +44,6 @@ import com.fongmi.android.tv.ui.presenter.ProgressPresenter;
 import com.fongmi.android.tv.ui.presenter.VodPresenter;
 import com.fongmi.android.tv.utils.Clock;
 import com.fongmi.android.tv.utils.Notify;
-import com.fongmi.android.tv.utils.Prefers;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.fongmi.android.tv.utils.Utils;
 import com.fongmi.android.tv.utils.VerifyDialogUtil;
@@ -57,8 +52,6 @@ import com.google.common.collect.Lists;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 public class HomeActivity extends BaseActivity implements CustomTitleView.Listener, VodPresenter.OnClickListener, FuncPresenter.OnClickListener, HistoryPresenter.OnClickListener {
@@ -70,10 +63,6 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     private SiteViewModel mViewModel;
     private boolean confirm;
     private Result result;
-
-    private final static String ENTRY_CODE = "016991";
-
-    private final static String Entry_CODE_KEY = "entryCode";
 
     @Override
     protected ViewBinding getBinding() {
@@ -113,35 +102,6 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         selector.addPresenter(ListRow.class, new CustomRowPresenter(16), HistoryPresenter.class);
         mBinding.recycler.setAdapter(new ItemBridgeAdapter(mAdapter = new ArrayObjectAdapter(selector)));
         mBinding.recycler.setVerticalSpacing(ResUtil.dp2px(16));
-    }
-
-
-    private void showInputDialog() {
-        /*@setView 装入一个EditView
-         */
-        if (ENTRY_CODE.equals(Prefers.getString(Entry_CODE_KEY))) {
-            return;
-        }
-        final EditText editText = new EditText(HomeActivity.this);
-        AlertDialog.Builder inputDialog =
-                new AlertDialog.Builder(HomeActivity.this);
-        inputDialog.setCancelable(false);
-        inputDialog.setTitle("请输入接入码").setView(editText);
-        inputDialog.setPositiveButton("确定",
-                (dialog, which) -> entryCodeCheck(editText.getText().toString())).show();
-    }
-
-    private void entryCodeCheck(String entryCode) {
-        @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("HH");
-        String hour = sdf.format(new Date());
-        if (!(hour + ENTRY_CODE).equals(entryCode)) {
-            Toast.makeText(HomeActivity.this,
-                    "接入码错误",
-                    Toast.LENGTH_SHORT).show();
-            finish();
-        } else {
-            Prefers.put(Entry_CODE_KEY, ENTRY_CODE);
-        }
     }
 
     private void setViewModel() {
