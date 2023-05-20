@@ -97,7 +97,6 @@ public class Updater implements Download.Callback {
                 System.exit(0);
             }
             if (need(code, name)) App.post(() -> show(App.activity(), name, desc));
-            else Notify.show("已是最新版本");
         } catch (Exception e) {
             e.printStackTrace();
         }

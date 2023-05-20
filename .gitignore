@@ -4,3 +4,5 @@
 *.jks
 /local.properties
 /media
+/release/leanbackJava/
+/release/mobileJava/
