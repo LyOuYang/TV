@@ -481,8 +481,8 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
 
     @Override
     public void onVideoSizeChanged(IMediaPlayer mp, int width, int height, int sar_num, int sar_den) {
-        mVideoWidth = mp.getVideoWidth();
-        mVideoHeight = mp.getVideoHeight();
+        mVideoWidth = width;
+        mVideoHeight = height;
         if (mVideoWidth != 0 && mVideoHeight != 0 && mRenderView != null) {
             mRenderView.setVideoSize(mVideoWidth, mVideoHeight);
             mRenderView.setVideoSampleAspectRatio(sar_num, sar_den);

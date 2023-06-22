@@ -7,6 +7,7 @@
       "type": 3,
       "api": "csp_Csp",
       "searchable": 1,
+      "filterable": 1,
       "changeable": 1,
       "ext": "https://github.com/one.json"
     },
@@ -16,6 +17,7 @@
       "type": 3,
       "api": "csp_Csp",
       "searchable": 1,
+      "filterable": 1,
       "changeable": 1,
       "ext": "https://github.com/two.json"
     },
@@ -25,6 +27,7 @@
       "type": 3,
       "api": "csp_Csp",
       "searchable": 1,
+      "filterable": 1,
       "changeable": 1,
       "ext": "https://github.com/extend.json",
       "jar": "https://github.com/extend.jar"

@@ -31,7 +31,6 @@ import com.fongmi.android.tv.utils.FileUtil;
 import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.Prefers;
 import com.fongmi.android.tv.utils.ResUtil;
-import com.fongmi.android.tv.utils.SourceUrlUtil;
 import com.fongmi.android.tv.utils.Utils;
 import com.fongmi.android.tv.utils.ViewUtil;
 import com.permissionx.guolindev.PermissionX;

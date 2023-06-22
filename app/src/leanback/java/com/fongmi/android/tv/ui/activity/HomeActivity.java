@@ -211,12 +211,6 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         return -1;
     }
 
-    private void setConfirm() {
-        confirm = true;
-        Notify.show(R.string.app_exit);
-        App.post(() -> confirm = false, 2000);
-    }
-
     @Override
     public void onItemClick(Func item) {
         switch (item.getResId()) {
@@ -328,10 +322,10 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onCastEvent(CastEvent event) {
-        if (ApiConfig.get().getConfig().equals(event.getConfig())) {
+        if (ApiConfig.getUrl().equals(event.getConfig())) {
             DetailActivity.cast(this, event.getHistory().update(ApiConfig.getCid()));
         } else {
-            ApiConfig.get().clear().config(event.getConfig()).load(getCallback(event));
+            ApiConfig.get().clear().config(Config.find(event.getConfig(), 0)).load(getCallback(event));
         }
     }
 
@@ -371,14 +365,14 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
 
     @Override
     public void onBackPressed() {
-        if (mBinding.progressLayout.isProgress()) {
-            mBinding.progressLayout.showContent();
-        } else if (mHistoryPresenter.isDelete()) {
+        if (mHistoryPresenter.isDelete()) {
             setHistoryDelete(false);
         } else if (mBinding.recycler.getSelectedPosition() != 0) {
             mBinding.recycler.scrollToPosition(0);
         } else if (!confirm) {
-            setConfirm();
+            confirm = true;
+            Notify.show(R.string.app_exit);
+            App.post(() -> confirm = false, 2000);
         } else {
             finish();
         }

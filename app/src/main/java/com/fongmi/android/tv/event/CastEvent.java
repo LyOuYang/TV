@@ -1,25 +1,26 @@
 package com.fongmi.android.tv.event;
 
-import com.fongmi.android.tv.bean.Config;
 import com.fongmi.android.tv.bean.Device;
 import com.fongmi.android.tv.bean.History;
+import com.fongmi.android.tv.utils.FileUtil;
 
 import org.greenrobot.eventbus.EventBus;
 
 public class CastEvent {
 
-    private final Config config;
-    private final Device device;
     private final History history;
+    private final Device device;
+    private String config;
 
-    public static void post(Config config, Device device, History history) {
-        EventBus.getDefault().post(new CastEvent(config, device, history));
+    public static void post(String device, String config, String history) {
+        EventBus.getDefault().post(new CastEvent(device, config, history));
     }
 
-    public CastEvent(Config config, Device device, History history) {
+    public CastEvent(String device, String config, String history) {
+        this.history = History.objectFrom(history);
+        this.device = Device.objectFrom(device);
         this.config = config;
-        this.device = device;
-        this.history = history;
+        checkConfig();
     }
 
     public History getHistory() {
@@ -30,7 +31,17 @@ public class CastEvent {
         return device;
     }
 
-    public Config getConfig() {
+    public String getConfig() {
         return config;
+    }
+
+    public void setConfig(String config) {
+        this.config = config;
+    }
+
+    private void checkConfig() {
+        if (!config.startsWith("file")) return;
+        if (FileUtil.getLocal(config).exists()) return;
+        setConfig(device.getIp() + "/" + config);
     }
 }

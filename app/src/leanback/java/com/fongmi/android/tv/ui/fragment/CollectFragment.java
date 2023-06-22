@@ -25,6 +25,7 @@ import com.fongmi.android.tv.ui.custom.CustomSelector;
 import com.fongmi.android.tv.ui.presenter.VodPresenter;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.google.common.collect.Lists;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +38,7 @@ public class CollectFragment extends BaseFragment implements VodPresenter.OnClic
     private String json;
 
     public static CollectFragment newInstance(List<Vod> items) {
-        return new CollectFragment().setJson(App.gson().toJson(items));
+        return new CollectFragment().setJson(new Gson().toJson(items));
     }
 
     private CollectFragment setJson(String json) {

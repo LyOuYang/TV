@@ -2,7 +2,6 @@ package com.fongmi.android.tv;
 
 import android.app.Activity;
 import android.content.DialogInterface;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 
@@ -84,7 +83,7 @@ public class Updater implements Download.Callback {
     }
 
     private boolean need(int code, String name) {
-        return Prefers.getUpdate() && branch.equals(Github.DEV) ? !name.equals(BuildConfig.VERSION_NAME) && code >= BuildConfig.VERSION_CODE : code > BuildConfig.VERSION_CODE;
+        return (branch.equals(Github.DEV) ? !name.equals(BuildConfig.VERSION_NAME) : code > BuildConfig.VERSION_CODE) && Prefers.getUpdate();
     }
 
     private void doInBackground() {

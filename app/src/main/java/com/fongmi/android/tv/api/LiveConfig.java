@@ -58,7 +58,7 @@ public class LiveConfig {
     }
 
     public static boolean hasUrl() {
-        return getUrl() != null && getUrl().length() > 0;
+        return getUrl().length() > 0;
     }
 
     public LiveConfig init() {
@@ -85,7 +85,7 @@ public class LiveConfig {
     }
 
     public void load(Callback callback) {
-        App.execute(() -> loadConfig(callback));
+        new Thread(() -> loadConfig(callback)).start();
     }
 
     private void loadConfig(Callback callback) {
@@ -176,7 +176,7 @@ public class LiveConfig {
     }
 
     public void setKeep(Channel channel) {
-        if (home == null || channel.getGroup().isHidden() || channel.getUrls().isEmpty()) return;
+        if (channel.getGroup().isHidden() || home == null) return;
         Prefers.putKeep(home.getName() + AppDatabase.SYMBOL + channel.getGroup().getName() + AppDatabase.SYMBOL + channel.getName() + AppDatabase.SYMBOL + channel.getCurrent());
     }
 

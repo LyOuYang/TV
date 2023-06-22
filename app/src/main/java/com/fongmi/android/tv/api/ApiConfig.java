@@ -32,7 +32,6 @@ public class ApiConfig {
     private List<Site> sites;
     private List<Parse> parses;
     private List<String> flags;
-    private List<Rule> rules;
     private JarLoader jarLoader;
     private PyLoader pyLoader;
     private JsLoader jsLoader;
@@ -86,7 +85,6 @@ public class ApiConfig {
         this.config = Config.vod();
         this.sites = new ArrayList<>();
         this.flags = new ArrayList<>();
-        this.rules = new ArrayList<>();
         this.parses = new ArrayList<>();
         this.jarLoader = new JarLoader();
         this.pyLoader = new PyLoader();
@@ -106,7 +104,6 @@ public class ApiConfig {
         this.parse = null;
         this.sites.clear();
         this.flags.clear();
-        this.rules.clear();
         this.parses.clear();
         this.jarLoader.clear();
         this.pyLoader.clear();
@@ -164,8 +161,8 @@ public class ApiConfig {
             initLive(object);
             initParse(object);
             initOther(object);
-//            jarLoader.parseJar("", Json.safeString(object, "spider"));
-//            config.json(object.toString()).update();
+            jarLoader.parseJar("", Json.safeString(object, "spider"));
+            config.json(object.toString()).update();
             App.post(callback::success);
         } catch (Throwable e) {
             e.printStackTrace();
@@ -201,7 +198,6 @@ public class ApiConfig {
         if (parses.size() > 0) parses.add(0, Parse.god());
         if (home == null) setHome(sites.isEmpty() ? new Site() : sites.get(0));
         if (parse == null) setParse(parses.isEmpty() ? new Parse() : parses.get(0));
-        setRules(Rule.arrayFrom(object.getAsJsonArray("rules")));
         setFlags(Json.safeListString(object, "flags"));
         setWall(Json.safeString(object, "wallpaper"));
         setAds(Json.safeListString(object, "ads"));
@@ -288,14 +284,6 @@ public class ApiConfig {
 
     private void setFlags(List<String> flags) {
         this.flags.addAll(flags);
-    }
-
-    public List<Rule> getRules() {
-        return rules == null ? Collections.emptyList() : rules;
-    }
-
-    public void setRules(List<Rule> rules) {
-        this.rules = rules;
     }
 
     public String getAds() {

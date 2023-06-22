@@ -102,12 +102,12 @@ public class Parse {
         this.activated = item.equals(this);
     }
 
-    public Map<String, String> getHeaders() {
-        return Json.toMap(getExt().getHeader());
-    }
-
     private void setHeader(JsonElement header) {
         getExt().setHeader(header);
+    }
+
+    public Map<String, String> getHeaders() {
+        return Json.toMap(getExt().getHeader());
     }
 
     @Override
@@ -138,10 +138,6 @@ public class Parse {
         private List<String> flag;
         @SerializedName("header")
         private JsonElement header;
-
-        public void setFlag(List<String> flag) {
-            this.flag = flag;
-        }
 
         public List<String> getFlag() {
             return flag == null ? Collections.emptyList() : flag;

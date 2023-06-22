@@ -618,12 +618,6 @@ public class LiveActivity extends BaseActivity implements GroupPresenter.OnClick
         hideCenter();
     }
 
-    private void setConfirm() {
-        confirm = true;
-        Notify.show(R.string.app_exit);
-        App.post(() -> confirm = false, 2000);
-    }
-
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (isVisible(mBinding.control.getRoot())) setR2Callback();
@@ -759,7 +753,9 @@ public class LiveActivity extends BaseActivity implements GroupPresenter.OnClick
         } else if (isVisible(mBinding.recycler)) {
             hideUI();
         } else if (!confirm) {
-            setConfirm();
+            confirm = true;
+            Notify.show(R.string.app_exit);
+            App.post(() -> confirm = false, 2000);
         } else {
             super.onBackPressed();
         }
