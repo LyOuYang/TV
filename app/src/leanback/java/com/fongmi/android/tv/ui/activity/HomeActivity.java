@@ -48,6 +48,7 @@ import com.fongmi.android.tv.utils.Clock;
 import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.fongmi.android.tv.utils.Utils;
+import com.fongmi.android.tv.utils.VerifyDialogUtil;
 import com.google.common.collect.Lists;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -78,6 +79,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
 
     @Override
     protected void initView() {
+        VerifyDialogUtil.showInputDialog(this);
         mBinding.progressLayout.showProgress();
         Updater.get().release().start();
         Server.get().start();
@@ -193,6 +195,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         adapter.add(Func.create(R.string.home_keep));
         adapter.add(Func.create(R.string.home_push));
         adapter.add(Func.create(R.string.home_setting));
+        adapter.add(Func.create(R.string.home_wallRefresh));
         return new ListRow(adapter);
     }
 
@@ -253,7 +256,14 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
             case R.string.home_setting:
                 SettingActivity.start(this);
                 break;
+            case R.string.home_wallRefresh:
+                setWallRefresh();
+                break;
         }
+    }
+
+    private void setWallRefresh() {
+        WallConfig.get().load(new Callback());
     }
 
     @Override

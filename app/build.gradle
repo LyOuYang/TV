@@ -105,8 +105,8 @@ dependencies {
     implementation 'androidx.preference:preference:1.2.0'
     implementation 'androidx.room:room-runtime:2.5.1'
     implementation 'cat.ereza:customactivityoncrash:2.4.0'
-    implementation 'com.github.bassaer:materialdesigncolors:1.0.0'
     implementation 'com.github.bumptech.glide:glide:4.15.1'
+    implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
     implementation 'com.github.bumptech.glide:annotations:4.15.1'
     implementation 'com.github.bumptech.glide:okhttp3-integration:4.15.1'
     implementation('com.github.thegrizzlylabs:sardine-android:0.8') { exclude group: 'com.squareup.okhttp3', module: 'okhttp' }
@@ -126,7 +126,7 @@ dependencies {
     implementation 'org.nanohttpd:nanohttpd:2.3.1'
     implementation('org.simpleframework:simple-xml:2.7.1') { exclude group: 'stax', module: 'stax-api' exclude group: 'xpp3', module: 'xpp3' }
     leanbackImplementation 'androidx.leanback:leanback:1.2.0-alpha02'
-    leanbackImplementation 'me.jessyan:autosize:1.2.1'
+    leanbackImplementation 'com.github.JessYanCoding:AndroidAutoSize:v1.2.1'
     mobileImplementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
     mobileImplementation 'com.github.devin1014.DLNA-Cast:dlna-dmc:V1.0.0'
     mobileImplementation('com.journeyapps:zxing-android-embedded:4.3.0') { transitive = false }

@@ -34,7 +34,9 @@ import com.fongmi.android.tv.utils.FileUtil;
 import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.Prefers;
 import com.fongmi.android.tv.utils.ResUtil;
+import com.fongmi.android.tv.utils.SourceUrlUtil;
 import com.fongmi.android.tv.utils.Utils;
+import com.fongmi.android.tv.utils.ViewUtil;
 import com.github.catvod.bean.Doh;
 import com.github.catvod.net.OkHttp;
 import com.permissionx.guolindev.PermissionX;
@@ -99,6 +101,14 @@ public class SettingActivity extends BaseActivity implements ConfigCallback, Sit
 
     @Override
     protected void initEvent() {
+        mBinding.tvUrlLayout.url.setOnClickListener(view -> {
+            ViewUtil.delayClick(mBinding.tvUrlLayout.url);
+            Updater.get().force().updateUrl("url", SourceUrlUtil.getUrlCallback(this));
+        });
+        mBinding.tvUrlLayout.urlBack.setOnClickListener(view -> {
+            ViewUtil.delayClick(mBinding.tvUrlLayout.urlBack);
+            Updater.get().force().updateUrl("url_back", SourceUrlUtil.getUrlCallback(this));
+        });
         mBinding.vod.setOnClickListener(this::onVod);
         mBinding.live.setOnClickListener(this::onLive);
         mBinding.wall.setOnClickListener(this::onWall);

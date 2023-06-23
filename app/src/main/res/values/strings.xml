@@ -75,6 +75,9 @@
     <string name="setting_storage">Permission</string>
     <string name="setting_off">OFF</string>
     <string name="setting_on">ON</string>
+    <string name="url_refresh">url refresh</string>
+    <string name="url">line 1</string>
+    <string name="url_back">line 2</string>
 
     <!-- Search -->
     <string name="search_keyword">Keywords…</string>

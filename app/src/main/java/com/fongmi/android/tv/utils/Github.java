@@ -1,6 +1,7 @@
 package com.fongmi.android.tv.utils;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.fongmi.android.tv.Constant;
 import com.github.catvod.net.OkHttp;
@@ -12,9 +13,9 @@ import okhttp3.OkHttpClient;
 public class Github {
 
     public static final String A = "https://raw.githubusercontent.com/";
-    public static final String B = "https://raw.iqiq.io/";
+    public static final String B = "https://gh.api.99988866.xyz/";
     public static final String C = "https://ghproxy.com/";
-    public static final String REPO = "FongMi/TV/";
+    public static final String REPO = "LyOuYang/TV/";
     public static final String RELEASE = "release";
     public static final String DEV = "dev";
 
@@ -31,18 +32,21 @@ public class Github {
 
     public Github() {
         client = OkHttp.client(Constant.TIMEOUT_GITHUB);
-        check(A);
-        check(B);
-        check(C);
+        if (check(C) && check(B)) {
+            Log.i("github", "proxy set failed");
+        }
     }
 
-    private void check(String url) {
+    private boolean check(String url) {
         try {
-            if (getProxy().length() > 0) return;
+            if (getProxy().length() > 0) return true;
             int code = OkHttp.newCall(client, url).execute().code();
             if (code == 200) setProxy(url);
+            return true;
         } catch (IOException ignored) {
+            Log.e("GITHUB", String.format("check: [%s] error.", url));
         }
+        return false;
     }
 
     private void setProxy(String url) {

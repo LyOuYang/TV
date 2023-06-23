@@ -75,6 +75,9 @@
     <string name="setting_storage">权限</string>
     <string name="setting_off">关</string>
     <string name="setting_on">开</string>
+    <string name="url_refresh">内置专用线路</string>
+    <string name="url">线路1</string>
+    <string name="url_back">线路2</string>
 
     <!-- Search -->
     <string name="search_keyword">关键字…</string>

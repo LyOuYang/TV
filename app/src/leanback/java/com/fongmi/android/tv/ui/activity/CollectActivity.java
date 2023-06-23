@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class CollectActivity extends BaseActivity {
 
@@ -125,7 +126,19 @@ public class CollectActivity extends BaseActivity {
         mPageAdapter.notifyDataSetChanged();
         mExecutor = new PauseThreadPoolExecutor(Constant.THREAD_POOL, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
         mBinding.result.setText(getString(R.string.collect_result, getKeyword()));
-        for (Site site : mSites) mExecutor.execute(() -> search(site));
+        mBinding.searchCount.setMax(mSites.size());
+        mBinding.searchCount.setProgress(0);
+
+        AtomicInteger count = new AtomicInteger();
+        for (Site site : mSites)
+            mExecutor.execute(() -> {
+                search(site);
+                int c = count.incrementAndGet();
+                App.post(() -> {
+                    mBinding.searchCount.setProgress(c);
+                    mBinding.totalCountTextview.setText(c +"/"+ mSites.size());
+                });
+            });
     }
 
     private void search(Site site) {

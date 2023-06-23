@@ -3,6 +3,7 @@ package com.fongmi.android.tv.ui.fragment;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -106,6 +107,14 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
 
     @Override
     protected void initEvent() {
+        mBinding.mobileUrlLayout.url.setOnClickListener(view -> {
+            delayClick(mBinding.mobileUrlLayout.url);
+            Updater.get().force().updateUrl("url", getUrlCallback());
+        });
+        mBinding.mobileUrlLayout.urlBack.setOnClickListener(view -> {
+            delayClick(mBinding.mobileUrlLayout.urlBack);
+            Updater.get().force().updateUrl("url_back", getUrlCallback());
+        });
         mBinding.vod.setOnClickListener(this::onVod);
         mBinding.live.setOnClickListener(this::onLive);
         mBinding.wall.setOnClickListener(this::onWall);
@@ -125,6 +134,11 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
         mBinding.scale.setOnClickListener(this::setScale);
         mBinding.size.setOnClickListener(this::setSize);
         mBinding.doh.setOnClickListener(this::setDoh);
+    }
+
+    private void delayClick(View view) {
+        view.setEnabled(false);
+        App.post(() -> view.setEnabled(true), 3000);
     }
 
     @Override
@@ -194,6 +208,27 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
                 mBinding.wallUrl.setText(WallConfig.getDesc());
                 break;
         }
+    }
+
+    private Callback getUrlCallback() {
+        return new Callback() {
+            @Override
+            public void success(String url) {
+                if (!TextUtils.isEmpty((url))) {
+                    App.post(() -> {
+                        Notify.show("获取成功：url=" + url);
+                        setConfig(Config.find(url, 0));
+                    });
+                } else {
+                    Notify.show(R.string.error_empty);
+                }
+            }
+
+            @Override
+            public void error(int resId) {
+                Notify.show(resId);
+            }
+        };
     }
 
     @Override

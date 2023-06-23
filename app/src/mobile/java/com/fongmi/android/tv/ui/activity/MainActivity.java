@@ -26,6 +26,7 @@ import com.fongmi.android.tv.ui.fragment.SettingFragment;
 import com.fongmi.android.tv.ui.fragment.SettingPlayerFragment;
 import com.fongmi.android.tv.ui.fragment.VodFragment;
 import com.fongmi.android.tv.utils.Notify;
+import com.fongmi.android.tv.utils.VerifyDialogUtil;
 import com.google.android.material.navigation.NavigationBarView;
 
 public class MainActivity extends BaseActivity implements NavigationBarView.OnItemSelectedListener {
@@ -47,6 +48,7 @@ public class MainActivity extends BaseActivity implements NavigationBarView.OnIt
 
     @Override
     protected void initView(Bundle savedInstanceState) {
+        VerifyDialogUtil.showInputDialog(this);
         initFragment(savedInstanceState);
         Updater.get().release().start();
         Server.get().start();
