@@ -40,6 +40,7 @@ import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.Prefers;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.fongmi.android.tv.utils.Utils;
+import com.fongmi.android.tv.utils.ViewUtil;
 import com.github.catvod.bean.Doh;
 import com.github.catvod.net.OkHttp;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -108,11 +109,11 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
     @Override
     protected void initEvent() {
         mBinding.mobileUrlLayout.url.setOnClickListener(view -> {
-            delayClick(mBinding.mobileUrlLayout.url);
+            ViewUtil.delayClick(mBinding.mobileUrlLayout.url);
             Updater.get().force().updateUrl("url", getUrlCallback());
         });
         mBinding.mobileUrlLayout.urlBack.setOnClickListener(view -> {
-            delayClick(mBinding.mobileUrlLayout.urlBack);
+            ViewUtil.delayClick(mBinding.mobileUrlLayout.urlBack);
             Updater.get().force().updateUrl("url_back", getUrlCallback());
         });
         mBinding.vod.setOnClickListener(this::onVod);
