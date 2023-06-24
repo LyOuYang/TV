@@ -17,7 +17,15 @@
     }
   ],
   "sites": [
-    {"key":"csp_Kunyu77","name":"🐞77影视","type":3,"api":"csp_Kunyu77","searchable":1,"quickSearch":1,"filterable":1},
+  {
+      "key": "csp_77",
+      "name": "七七┃影视",
+      "type": 3,
+      "api": "csp_Kunyu77",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1
+    },
     {
       "key": "影图",
       "name": "影图源",
